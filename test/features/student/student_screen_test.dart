@@ -12,6 +12,7 @@ import 'package:school_office_management/features/student/presentation/student_f
 import 'package:school_office_management/features/student/presentation/student_list_screen.dart';
 
 import '../family/fakes/fake_family_repository.dart';
+import '../settings/helpers.dart';
 import 'fakes/fake_student_repository.dart';
 
 Family buildFamily({
@@ -51,7 +52,7 @@ Student buildStudent({
   DateTime? dateOfBirth,
   String? admissionNumber,
   DateTime? admissionDate,
-  String? className = 'Class 5',
+  String? className = '5',
   String? section = 'A',
   String? contactReference,
   String? notes,
@@ -118,6 +119,7 @@ Future<void> pumpList(
       StudentListScreen(
         studentService: studentService,
         familyService: familyService,
+        settingsService: await buildTestSettingsService(),
       ),
     ),
   );
@@ -133,6 +135,7 @@ Future<List<Student?>> pushAndOpen(
   Student? existing,
 }) async {
   final result = <Student?>[];
+  final settingsService = await buildTestSettingsService();
   await tester.pumpWidget(
     MaterialApp(
       home: Builder(
@@ -146,6 +149,7 @@ Future<List<Student?>> pushAndOpen(
                       builder: (_) => StudentFormScreen(
                         studentService: studentService,
                         familyService: familyService,
+                        settingsService: settingsService,
                         existing: existing,
                       ),
                     ),
@@ -162,6 +166,16 @@ Future<List<Student?>> pushAndOpen(
   await tester.tap(find.text('open form'));
   await tester.pumpAndSettle();
   return result;
+}
+
+/// Selects an option from a DropdownButtonFormField by its form key.
+Future<void> selectDropdown(WidgetTester tester, Key key, String option) async {
+  await tester.ensureVisible(find.byKey(key));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(key));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(option).last);
+  await tester.pumpAndSettle();
 }
 
 /// Fills the student name (when given) and taps Save using fixed pumps —
@@ -203,6 +217,7 @@ Future<void> pumpDetails(
       StudentDetailsScreen(
         studentService: studentService,
         familyService: familyService,
+        settingsService: await buildTestSettingsService(),
         studentId: studentId,
       ),
     ),
@@ -222,7 +237,7 @@ void main() {
             id: 2,
             studentId: 'STU-000002',
             name: 'Usman Ali',
-            className: 'Class 3',
+            className: '3',
             section: 'B',
             status: StudentStatus.left,
           ),
@@ -326,7 +341,7 @@ void main() {
             id: 2,
             studentId: 'STU-000002',
             name: 'Usman Ali',
-            className: 'Class 3',
+            className: '3',
           ),
         ],
       );
@@ -334,7 +349,7 @@ void main() {
 
       await tester.tap(find.byKey(const Key('student_class_filter')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Class 3').last);
+      await tester.tap(find.text('3').last);
       await tester.pumpAndSettle();
 
       expect(find.text('Usman Ali'), findsOneWidget);
@@ -423,13 +438,13 @@ void main() {
       expect(find.byKey(const Key('student_change_family')), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('student_name')), 'Ali Khan');
-      await tester.enterText(find.byKey(const Key('student_class')), 'Class 5');
+      await selectDropdown(tester, const Key('student_class'), '5');
       await submitStudentForm(tester);
 
       expect(result.single?.name, 'Ali Khan');
       expect(result.single?.studentId, 'STU-000001');
       expect(result.single?.familyId, 1);
-      expect(result.single?.className, 'Class 5');
+      expect(result.single?.className, '5');
     });
 
     testWidgets('offers to create a family and auto-selects it', (
@@ -569,14 +584,14 @@ void main() {
           id: 1,
           admissionId: 'ADM-000001',
           admissionDate: DateTime(2026, 8, 1),
-          className: 'Class 5',
+          className: '5',
           section: 'A',
         ),
       ]);
       services.studentRepo.seedHistory(1, [
         StudentHistoryEntry(
           id: 1,
-          className: 'Class 4',
+          className: '4',
           section: 'B',
           status: 'active',
           changedAt: DateTime(2026, 7, 1),
@@ -615,7 +630,7 @@ void main() {
       expect(find.text('0300-1234567'), findsOneWidget);
 
       expect(find.text('Academic Information'), findsOneWidget);
-      expect(find.text('Class 5'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
       expect(find.text('A'), findsOneWidget);
       expect(find.text('Active'), findsWidgets);
 

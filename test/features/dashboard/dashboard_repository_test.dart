@@ -150,7 +150,7 @@ void main() {
     required int studentId,
     required String date,
     String id = 'ADM-000001',
-    String className = 'Class 5',
+    String className = '5',
   }) {
     return database!.raw.insert('admissions', {
       'admission_id': id,
@@ -480,7 +480,7 @@ void main() {
         expect(summary.recentPayments.single.title, 'Ali Raza');
         expect(summary.recentPayments.single.amount, 500);
         expect(summary.recentAdmissions.single.title, 'Ali Raza');
-        expect(summary.recentAdmissions.single.subtitle, contains('Class 5'));
+        expect(summary.recentAdmissions.single.subtitle, contains('5'));
         expect(summary.recentExpenses.single.amount, 1200);
         expect(summary.isEmpty, isFalse);
       },

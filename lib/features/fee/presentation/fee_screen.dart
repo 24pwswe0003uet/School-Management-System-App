@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../settings/domain/services/settings_service.dart';
 import '../application/fee_service.dart';
 import 'collect_payment_screen.dart';
 import 'fee_generate_screen.dart';
@@ -10,9 +11,14 @@ import 'fee_structures_screen.dart';
 /// Module 7 hub. Reached from the dashboard "Collect Fee" quick action and
 /// routes to every fee feature.
 class FeeScreen extends StatelessWidget {
-  const FeeScreen({super.key, required this.feeService});
+  const FeeScreen({
+    super.key,
+    required this.feeService,
+    required this.settingsService,
+  });
 
   final FeeService feeService;
+  final SettingsService settingsService;
 
   Future<void> _push(BuildContext context, Widget screen) {
     return Navigator.of(context).push(
@@ -35,7 +41,10 @@ class FeeScreen extends StatelessWidget {
             subtitle: 'Search a student and record a payment with a receipt.',
             onTap: () => _push(
               context,
-              CollectPaymentScreen(feeService: feeService),
+              CollectPaymentScreen(
+                feeService: feeService,
+                settingsService: settingsService,
+              ),
             ),
           ),
           _FeeMenuTile(
@@ -48,7 +57,10 @@ class FeeScreen extends StatelessWidget {
                 'month or status.',
             onTap: () => _push(
               context,
-              FeeRecordsScreen(feeService: feeService),
+              FeeRecordsScreen(
+                feeService: feeService,
+                settingsService: settingsService,
+              ),
             ),
           ),
           _FeeMenuTile(
@@ -83,7 +95,10 @@ class FeeScreen extends StatelessWidget {
                 'and student history.',
             onTap: () => _push(
               context,
-              FeeReportsScreen(feeService: feeService),
+              FeeReportsScreen(
+                feeService: feeService,
+                settingsService: settingsService,
+              ),
             ),
           ),
         ],

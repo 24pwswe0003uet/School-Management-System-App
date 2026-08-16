@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../shared/utils/formatters.dart';
+import '../../settings/domain/entities/school_profile.dart';
 import '../domain/entities/receipt_data.dart';
 import 'simple_pdf_writer.dart';
 
@@ -34,15 +35,24 @@ class ReceiptPrinter {
   }
 
   /// Saves the receipt as a PDF. Returns true when the user chose a location.
-  Future<bool> saveReceiptPdf(ReceiptData data) {
-    final bytes = buildReceiptPdf(data);
+  Future<bool> saveReceiptPdf(ReceiptData data, {SchoolProfile? profile}) {
+    final bytes = buildReceiptPdf(data, profile: profile);
     return _saver(bytes, 'Receipt-${_safeName(data.receiptNumber)}.pdf');
   }
 
   /// Renders the receipt to PDF bytes (pure function — easy to unit test).
-  Uint8List buildReceiptPdf(ReceiptData data) {
+  Uint8List buildReceiptPdf(ReceiptData data, {SchoolProfile? profile}) {
+    final schoolName = (profile?.schoolName ?? '').trim().isEmpty
+        ? AppConfig.appName
+        : profile!.schoolName.trim();
     final pdf = SimplePdfWriter();
-    pdf.text(AppConfig.appName, size: 18, bold: true);
+    pdf.text(schoolName, size: 18, bold: true);
+    if ((profile?.address ?? '').trim().isNotEmpty) {
+      pdf.text(profile!.address.trim(), size: 9);
+    }
+    if ((profile?.phone ?? '').trim().isNotEmpty) {
+      pdf.text(profile!.phone.trim(), size: 9);
+    }
     pdf.spacer(2);
     pdf.text('FEE RECEIPT', size: 14, bold: true);
     pdf.spacer(6);
@@ -84,7 +94,11 @@ class ReceiptPrinter {
       pdf.text('VOIDED - THIS PAYMENT WAS REVERSED', size: 13, bold: true);
     }
     pdf.spacer(12);
-    pdf.text('This is a computer-generated receipt.', size: 9);
+    final footer = (profile?.receiptFooter ?? '').trim();
+    pdf.text(
+      footer.isEmpty ? 'This is a computer-generated receipt.' : footer,
+      size: 9,
+    );
     return pdf.build();
   }
 

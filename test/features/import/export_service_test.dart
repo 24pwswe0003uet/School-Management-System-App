@@ -45,7 +45,7 @@ void main() {
     gender: 'male',
     dateOfBirth: null,
     admissionNumber: 'ADM-100',
-    className: 'Class 5',
+    className: '5',
     section: 'A',
     admissionFee: 15000,
     guardianName: 'Ahmed Khan',

@@ -37,7 +37,8 @@ class FeeRepositoryImpl implements FeeRepository {
   Future<List<FeeStructure>> listFeeStructures() async {
     final rows = await _db.query(
       'fee_structures',
-      orderBy: 'CASE WHEN class_name IS NULL THEN 0 ELSE 1 END, '
+      orderBy:
+          "CASE WHEN fee_type = 'admission' THEN 0 WHEN class_name IS NULL THEN 1 ELSE 2 END, "
           'COALESCE(class_name, \'\')',
     );
     return rows.map(_structureFromRow).toList();
@@ -50,8 +51,23 @@ class FeeRepositoryImpl implements FeeRepository {
     required double monthlyAmount,
     double discountAmount = 0,
     String? description,
+    required FeeType feeType,
   }) async {
     _validateStructure(name, monthlyAmount, discountAmount);
+
+    // Validate className exists in academic_classes when provided.
+    if (className != null && className.isNotEmpty) {
+      final classRows = await _db.query(
+        'academic_classes',
+        where: 'class_name = ?',
+        whereArgs: [className],
+      );
+      if (classRows.isEmpty) {
+        throw ArgumentError(
+            'Invalid class name. Configure the class in Settings → Academic → Classes first.');
+      }
+    }
+
     final structureId = await _nextId(
       _db,
       'fee_structures',
@@ -67,6 +83,7 @@ class FeeRepositoryImpl implements FeeRepository {
         'monthly_amount': monthlyAmount,
         'discount_amount': discountAmount,
         'description': _emptyToNull(description),
+        'fee_type': feeType.dbValue,
         'is_active': 1,
         'created_at': now,
         'updated_at': now,
@@ -74,7 +91,9 @@ class FeeRepositoryImpl implements FeeRepository {
       return (await _getStructure(id))!;
     } on DatabaseException catch (e) {
       if (_isConstraintError(e)) {
-        throw ArgumentError('A fee rule already exists for that class.');
+        final typeLabel = feeType.label;
+        final classLabel = className ?? 'default (no class)';
+        throw ArgumentError('A $typeLabel fee rule already exists for $classLabel.');
       }
       rethrow;
     }
@@ -88,8 +107,23 @@ class FeeRepositoryImpl implements FeeRepository {
     required double monthlyAmount,
     double discountAmount = 0,
     String? description,
+    required FeeType feeType,
   }) async {
     _validateStructure(name, monthlyAmount, discountAmount);
+
+    // Validate className exists in academic_classes when provided.
+    if (className != null && className.isNotEmpty) {
+      final classRows = await _db.query(
+        'academic_classes',
+        where: 'class_name = ?',
+        whereArgs: [className],
+      );
+      if (classRows.isEmpty) {
+        throw ArgumentError(
+            'Invalid class name. Configure the class in Settings → Academic → Classes first.');
+      }
+    }
+
     try {
       await _db.update(
         'fee_structures',
@@ -99,6 +133,7 @@ class FeeRepositoryImpl implements FeeRepository {
           'monthly_amount': monthlyAmount,
           'discount_amount': discountAmount,
           'description': _emptyToNull(description),
+          'fee_type': feeType.dbValue,
           'updated_at': _now(),
         },
         where: 'id = ?',
@@ -106,7 +141,9 @@ class FeeRepositoryImpl implements FeeRepository {
       );
     } on DatabaseException catch (e) {
       if (_isConstraintError(e)) {
-        throw ArgumentError('A fee rule already exists for that class.');
+        final typeLabel = feeType.label;
+        final classLabel = className ?? 'default (no class)';
+        throw ArgumentError('A $typeLabel fee rule already exists for $classLabel.');
       }
       rethrow;
     }
@@ -154,8 +191,23 @@ class FeeRepositoryImpl implements FeeRepository {
     await _db.transaction((txn) async {
       for (var i = 0; i < students.length; i++) {
         final row = students[i];
-        final studentId = (row['id'] as num).toInt();
-        final rule = rules.resolve(row['class'] as String?);
+        final idValue = row['id'];
+        if (idValue == null) {
+          print('Warning: student row missing id at index $i');
+          noRule++;
+          onProgress?.call(i + 1, total);
+          continue;
+        }
+        final studentId = (idValue as num?)?.toInt() ?? 0;
+        if (studentId == 0) {
+          print('Warning: invalid student id at index $i: $idValue');
+          noRule++;
+          onProgress?.call(i + 1, total);
+          continue;
+        }
+        final studentClass = row['class'] as String?;
+        // Only pick monthly fee rules; skip admission rules.
+        final rule = rules.resolveForMonthly(studentClass);
         if (rule == null) {
           noRule++;
         } else {
@@ -401,10 +453,9 @@ class FeeRepositoryImpl implements FeeRepository {
   @override
   Future<List<String>> distinctClasses() async {
     final rows = await _db.rawQuery(
-      "SELECT DISTINCT class FROM students "
-      "WHERE class IS NOT NULL AND class <> '' ORDER BY class",
+      "SELECT DISTINCT class_name FROM academic_classes WHERE is_active = 1 ORDER BY class_name",
     );
-    return rows.map((r) => r['class'] as String).toList();
+    return rows.map((r) => r['class_name'] as String).toList();
   }
 
   @override
@@ -847,9 +898,21 @@ class FeeRepositoryImpl implements FeeRepository {
       className: row['class_name'] as String?,
       monthlyAmount: _asDouble(row['monthly_amount']),
       discountAmount: _asDouble(row['discount_amount']),
+      feeType: _feeTypeFromDb(row['fee_type'] as String?),
       description: row['description'] as String?,
       isActive: (row['is_active'] as num?)?.toInt() == 1,
     );
+  }
+
+  static FeeType _feeTypeFromDb(String? dbValue) {
+    if (dbValue == null) return FeeType.monthly;
+    switch (dbValue.trim().toLowerCase()) {
+      case 'admission':
+        return FeeType.admission;
+      case 'monthly':
+      default:
+        return FeeType.monthly;
+    }
   }
 
   static FeeRecord _recordFromRow(Map<String, Object?> row) {
@@ -896,19 +959,37 @@ class FeeRepositoryImpl implements FeeRepository {
 /// The active fee rules, resolved by class with a global default fallback.
 class _ActiveRules {
   _ActiveRules(List<FeeStructure> structures)
-      : _byClass = {
+      : _byClassAdmission = {
           for (final s in structures)
-            if (s.className != null) s.className!: s,
+            if (s.className != null && s.feeType == FeeType.admission) s.className!: s,
         },
-        _default = structures.where((s) => s.isDefault).firstOrNull;
+        _byClassMonthly = {
+          for (final s in structures)
+            if (s.className != null && s.feeType == FeeType.monthly) s.className!: s,
+        },
+        _defaultMonthly =
+            structures.where((s) => s.feeType == FeeType.monthly && s.isDefault).firstOrNull,
+        _defaultAdmission =
+            structures.where((s) => s.feeType == FeeType.admission && s.isDefault).firstOrNull;
 
-  final Map<String, FeeStructure> _byClass;
-  final FeeStructure? _default;
+  final Map<String, FeeStructure> _byClassMonthly;
+  final Map<String, FeeStructure> _byClassAdmission;
+  final FeeStructure? _defaultMonthly;
+  final FeeStructure? _defaultAdmission;
 
-  FeeStructure? resolve(String? className) {
-    if (className != null && _byClass.containsKey(className)) {
-      return _byClass[className];
+  /// Returns the monthly fee rule for [className], or the default monthly rule.
+  FeeStructure? resolveForMonthly(String? className) {
+    if (className != null && _byClassMonthly.containsKey(className)) {
+      return _byClassMonthly[className];
     }
-    return _default;
+    return _defaultMonthly;
+  }
+
+  /// Returns the admission fee rule for [className], or the default admission rule.
+  FeeStructure? resolveForAdmission(String? className) {
+    if (className != null && _byClassAdmission.containsKey(className)) {
+      return _byClassAdmission[className];
+    }
+    return _defaultAdmission;
   }
 }

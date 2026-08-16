@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/utils/formatters.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../application/fee_service.dart';
 import '../domain/entities/fee_record_details.dart';
 import '../domain/entities/fee_status.dart';
@@ -15,10 +16,12 @@ class FeeRecordDetailScreen extends StatefulWidget {
   const FeeRecordDetailScreen({
     super.key,
     required this.feeService,
+    required this.settingsService,
     required this.recordId,
   });
 
   final FeeService feeService;
+  final SettingsService settingsService;
   final int recordId;
 
   @override
@@ -64,6 +67,7 @@ class _FeeRecordDetailScreenState extends State<FeeRecordDetailScreen> {
     await runCollectPaymentFlow(
       context,
       feeService: widget.feeService,
+      settingsService: widget.settingsService,
       record: details.record,
     );
     await _load();
@@ -158,7 +162,10 @@ class _FeeRecordDetailScreenState extends State<FeeRecordDetailScreen> {
     }
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => ReceiptScreen(receipt: receipt),
+        builder: (_) => ReceiptScreen(
+          receipt: receipt,
+          settingsService: widget.settingsService,
+        ),
       ),
     );
   }

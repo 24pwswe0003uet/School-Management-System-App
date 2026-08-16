@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/utils/formatters.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../application/fee_service.dart';
 import '../domain/entities/fee_record.dart';
 import '../domain/entities/fee_student_pick.dart';
@@ -10,9 +11,14 @@ import 'widgets/fee_status_chip.dart';
 /// Records a payment: search an active student → pick an open monthly charge →
 /// enter the amount/date/receipt/note → receipt is shown and printable.
 class CollectPaymentScreen extends StatefulWidget {
-  const CollectPaymentScreen({super.key, required this.feeService});
+  const CollectPaymentScreen({
+    super.key,
+    required this.feeService,
+    required this.settingsService,
+  });
 
   final FeeService feeService;
+  final SettingsService settingsService;
 
   @override
   State<CollectPaymentScreen> createState() => _CollectPaymentScreenState();
@@ -96,6 +102,7 @@ class _CollectPaymentScreenState extends State<CollectPaymentScreen> {
     await runCollectPaymentFlow(
       context,
       feeService: widget.feeService,
+      settingsService: widget.settingsService,
       record: record,
     );
     if (!mounted) return;

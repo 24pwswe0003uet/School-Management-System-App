@@ -8,6 +8,7 @@ import 'package:school_office_management/features/family/presentation/family_for
 import 'package:school_office_management/features/family/presentation/family_list_screen.dart';
 import 'package:school_office_management/features/student/domain/services/student_service.dart';
 
+import '../settings/helpers.dart';
 import '../student/fakes/fake_student_repository.dart';
 import 'fakes/fake_family_repository.dart';
 
@@ -59,11 +60,13 @@ void useLargeSurface(WidgetTester tester) {
 }
 
 Future<void> pumpList(WidgetTester tester, FamilyService service) async {
+  final settingsService = await buildTestSettingsService();
   await tester.pumpWidget(
     wrap(
       FamilyListScreen(
         familyService: service,
         studentService: studentService(),
+        settingsService: settingsService,
       ),
     ),
   );
@@ -78,6 +81,7 @@ Future<List<Family?>> pushAndOpen(
   Family? existing,
 }) async {
   final result = <Family?>[];
+  final settingsService = await buildTestSettingsService();
   await tester.pumpWidget(
     MaterialApp(
       home: Builder(
@@ -91,6 +95,7 @@ Future<List<Family?>> pushAndOpen(
                       builder: (_) => FamilyFormScreen(
                         familyService: service,
                         studentService: studentService(),
+                        settingsService: settingsService,
                         existing: existing,
                       ),
                     ),
@@ -381,6 +386,7 @@ void main() {
           FamilyDetailsScreen(
             familyService: service,
             studentService: studentService(),
+            settingsService: await buildTestSettingsService(),
             familyId: familyId,
           ),
         ),
@@ -399,7 +405,7 @@ void main() {
           id: 1,
           studentId: 'STU-000001',
           name: 'Ali Khan',
-          className: 'Class 5',
+          className: '5',
           section: 'A',
           status: 'active',
         ),
@@ -407,7 +413,7 @@ void main() {
           id: 2,
           studentId: 'STU-000002',
           name: 'Usman Khan',
-          className: 'Class 3',
+          className: '3',
           section: 'B',
           status: 'active',
         ),
@@ -424,7 +430,7 @@ void main() {
       expect(find.text('Students (2)'), findsOneWidget);
       expect(find.text('Ali Khan'), findsOneWidget);
       expect(find.text('Usman Khan'), findsOneWidget);
-      expect(find.textContaining('Class 5'), findsOneWidget);
+      expect(find.textContaining('5'), findsOneWidget);
       expect(find.text('Rs 12,500'), findsOneWidget);
     });
 
@@ -472,7 +478,7 @@ void main() {
           id: 1,
           studentId: 'STU-000001',
           name: 'Ali Khan',
-          className: 'Class 5',
+          className: '5',
           section: 'A',
           status: 'active',
         ),
@@ -500,6 +506,7 @@ void main() {
       final family = buildFamily();
       final repository = FakeFamilyRepository(families: [family]);
       final service = FamilyService(repository);
+      final settingsService = await buildTestSettingsService();
 
       await tester.pumpWidget(
         MaterialApp(
@@ -513,6 +520,7 @@ void main() {
                         builder: (_) => FamilyDetailsScreen(
                           familyService: service,
                           studentService: studentService(),
+                          settingsService: settingsService,
                           familyId: family.id,
                         ),
                       ),

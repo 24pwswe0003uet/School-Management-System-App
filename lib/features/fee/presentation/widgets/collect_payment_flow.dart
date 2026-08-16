@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../settings/domain/services/settings_service.dart';
 import '../../application/fee_service.dart';
 import '../../domain/entities/fee_record.dart';
 import '../receipt_screen.dart';
@@ -10,6 +11,7 @@ import 'payment_sheet.dart';
 Future<void> runCollectPaymentFlow(
   BuildContext context, {
   required FeeService feeService,
+  required SettingsService settingsService,
   required FeeRecord record,
 }) async {
   final payment = await showPaymentSheet(
@@ -22,7 +24,10 @@ Future<void> runCollectPaymentFlow(
   if (receipt == null) return;
   await Navigator.of(context).push(
     MaterialPageRoute<void>(
-      builder: (_) => ReceiptScreen(receipt: receipt),
+      builder: (_) => ReceiptScreen(
+        receipt: receipt,
+        settingsService: settingsService,
+      ),
     ),
   );
 }

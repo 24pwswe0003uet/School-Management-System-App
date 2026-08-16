@@ -11,15 +11,19 @@ import 'package:school_office_management/features/dashboard/domain/services/dash
 import 'package:school_office_management/features/employee/domain/services/employee_service.dart';
 import 'package:school_office_management/features/family/domain/services/family_service.dart';
 import 'package:school_office_management/features/fee/application/fee_service.dart';
+import 'package:school_office_management/features/expense/domain/services/expense_service.dart';
 import 'package:school_office_management/features/salary/domain/services/salary_service.dart';
 import 'package:school_office_management/features/student/domain/services/student_service.dart';
 
+import '../settings/helpers.dart';
 import '../family/fakes/fake_family_repository.dart';
 import '../fee/fakes/fake_fee_repository.dart';
 import '../import/fakes/fake_import_repository.dart';
 import '../salary/fakes/fake_salary_repository.dart';
 import '../student/fakes/fake_student_repository.dart';
 import '../employee/fakes/fake_employee_repository.dart';
+import '../expense/fakes/fake_expense_repository.dart';
+import '../reports/mock_repository.dart';
 import 'fakes/fake_dashboard_repository.dart';
 
 class _AlwaysAdminAuthRepository implements AuthRepository {
@@ -120,6 +124,11 @@ void main() {
           importService: buildTestImportService(),
           employeeService: EmployeeService(FakeEmployeeRepository()),
           salaryService: SalaryService(FakeSalaryRepository()),
+          expenseService: ExpenseService(FakeExpenseRepository()),
+          reportRepository: MockReportRepository(),
+          settingsService: await buildTestSettingsService(
+            authService: authService,
+          ),
         ),
       ),
     );

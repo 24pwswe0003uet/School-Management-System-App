@@ -51,6 +51,7 @@ abstract interface class FeeRepository {
     required double monthlyAmount,
     double discountAmount,
     String? description,
+    required FeeType feeType,
   });
 
   Future<FeeStructure> updateFeeStructure({
@@ -60,6 +61,7 @@ abstract interface class FeeRepository {
     required double monthlyAmount,
     double discountAmount,
     String? description,
+    required FeeType feeType,
   });
 
   Future<void> setFeeStructureActive(int id, bool isActive);

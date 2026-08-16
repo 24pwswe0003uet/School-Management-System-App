@@ -7,6 +7,7 @@ import 'package:school_office_management/features/student/domain/entities/studen
 import 'package:school_office_management/features/student/domain/services/student_service.dart';
 
 import '../family/fakes/fake_family_repository.dart';
+import '../settings/helpers.dart';
 import '../student/fakes/fake_student_repository.dart';
 
 Family buildFamily({
@@ -45,7 +46,7 @@ Student buildStudent({
   DateTime? dateOfBirth,
   String? admissionNumber,
   DateTime? admissionDate,
-  String? className = 'Class 5',
+  String? className = '5',
   String? section = 'A',
   StudentStatus status = StudentStatus.active,
 }) {
@@ -116,6 +117,7 @@ Future<void> pumpWizard(
       AdmissionWizardScreen(
         studentService: studentService,
         familyService: familyService,
+        settingsService: await buildTestSettingsService(),
       ),
     ),
   );
@@ -129,6 +131,7 @@ Future<void> pushWizard(
   required StudentService studentService,
   required FamilyService familyService,
 }) async {
+  final settingsService = await buildTestSettingsService();
   await tester.pumpWidget(
     MaterialApp(
       home: Builder(
@@ -140,6 +143,7 @@ Future<void> pushWizard(
                   builder: (_) => AdmissionWizardScreen(
                     studentService: studentService,
                     familyService: familyService,
+                    settingsService: settingsService,
                   ),
                 ),
               ),
@@ -183,11 +187,20 @@ Future<void> goToDetails(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> selectDropdown(WidgetTester tester, Key key, String option) async {
+  await tester.ensureVisible(find.byKey(key));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(key));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(option).last);
+  await tester.pumpAndSettle();
+}
+
 Future<void> fillDetails(
   WidgetTester tester, {
   String name = 'Ali Khan',
   String? admissionNumber,
-  String className = 'Class 5',
+  String className = '5',
   String section = 'A',
   String fee = '5000',
   String notes = '',
@@ -199,8 +212,8 @@ Future<void> fillDetails(
       admissionNumber,
     );
   }
-  await tester.enterText(find.byKey(const Key('adm_class')), className);
-  await tester.enterText(find.byKey(const Key('adm_section')), section);
+  await selectDropdown(tester, const Key('adm_class'), className);
+  await selectDropdown(tester, const Key('adm_section'), section);
   await tester.enterText(find.byKey(const Key('adm_fee')), fee);
   if (notes.isNotEmpty) {
     await tester.enterText(find.byKey(const Key('adm_notes')), notes);
@@ -244,7 +257,7 @@ void main() {
       await continueToReview(tester);
 
       expect(find.text('Step 3 of 3 — Review & confirm'), findsOneWidget);
-      expect(find.text('Class 5'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
       expect(find.text('A'), findsOneWidget);
       expect(find.text('ADM-000001'), findsOneWidget);
       expect(find.text('Rs 5,000'), findsOneWidget);
@@ -280,7 +293,7 @@ void main() {
       expect(find.textContaining('FAM-000001'), findsOneWidget);
       expect(find.textContaining('Ahmed Khan'), findsOneWidget);
       expect(find.textContaining('Sara Khan'), findsOneWidget);
-      expect(find.text('Class 5'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
       expect(find.text('A'), findsOneWidget);
       expect(find.text(todayIso()), findsOneWidget);
       expect(find.text('ADM-000001'), findsOneWidget);
@@ -297,7 +310,7 @@ void main() {
       expect(details.admissions, hasLength(1));
       expect(details.admissions.single.admissionNumber, 'ADM-000001');
       expect(details.admissions.single.admissionFee, 5000);
-      expect(details.admissions.single.className, 'Class 5');
+      expect(details.admissions.single.className, '5');
     });
 
     testWidgets(

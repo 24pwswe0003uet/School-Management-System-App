@@ -4,12 +4,18 @@ import 'app.dart';
 import 'core/config/app_config.dart';
 import 'core/database/app_database.dart';
 import 'core/database/database_factory.dart';
+import 'core/services/backup_locator.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/services/auth_service.dart';
+import 'features/backup/data/repositories/backup_repository_impl.dart';
+import 'features/backup/domain/services/backup_service.dart';
+import 'features/backup/domain/services/data_export_service.dart';
 import 'features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'features/dashboard/domain/services/dashboard_service.dart';
 import 'features/employee/data/repositories/employee_repository_impl.dart';
 import 'features/employee/domain/services/employee_service.dart';
+import 'features/expense/data/repositories/expense_repository_impl.dart';
+import 'features/expense/domain/services/expense_service.dart';
 import 'features/family/data/repositories/family_repository_impl.dart';
 import 'features/family/domain/services/family_service.dart';
 import 'features/fee/application/fee_service.dart';
@@ -19,10 +25,15 @@ import 'features/import/data/repositories/import_repository_impl.dart';
 import 'features/import/domain/services/column_mapper.dart';
 import 'features/import/domain/services/excel_reader.dart';
 import 'features/import/domain/services/export_service.dart';
+import 'features/reports/domain/services/report_export_service.dart';
 import 'features/import/domain/services/import_planner.dart';
+import 'features/reports/data/repositories/report_repository_impl.dart';
 import 'features/salary/data/repositories/salary_repository_impl.dart';
-import 'features/salary/domain/services/salary_service.dart';
+import 'features/settings/data/logo_store/logo_store_factory.dart';
+import 'features/settings/data/repositories/settings_repository_impl.dart';
+import 'features/settings/domain/services/settings_service.dart';
 import 'features/student/data/repositories/student_repository_impl.dart';
+import 'features/salary/domain/services/salary_service.dart';
 import 'features/student/domain/services/student_service.dart';
 import 'shared/theme/app_theme.dart';
 
@@ -55,6 +66,15 @@ Future<void> _startApp() async {
       repository: FeeRepositoryImpl(database.raw),
       authService: authService,
     );
+    final expenseRepository = ExpenseRepositoryImpl(database.raw);
+    final expenseService = ExpenseService(expenseRepository);
+    final reportRepository = ReportRepositoryImpl(database.raw);
+    final reportExportService = ReportExportService();
+    final settingsService = SettingsService(
+      repository: SettingsRepositoryImpl(database.raw, createLogoStore()),
+      authService: authService,
+    );
+    await settingsService.load();
     final importRepository = ImportRepositoryImpl(database.raw);
     final importService = ImportService(
       reader: ExcelReader(),
@@ -63,6 +83,27 @@ Future<void> _startApp() async {
       repository: importRepository,
       exportService: ExportService(importRepository),
     );
+
+    // Module 13: Backup & Data Management.
+    final backupLocator = createBackupLocator();
+    final backupDirectory = await backupLocator.backupDirectory();
+    final backupRepository = BackupRepositoryImpl(
+      backupDirectory: backupDirectory,
+    );
+    final backupService = BackupService(
+      database: database,
+      repository: backupRepository,
+      authService: authService,
+    );
+    final dataExportService = DataExportService(
+      students: StudentRepositoryImpl(database.raw),
+      families: FamilyRepositoryImpl(database.raw),
+      employees: EmployeeRepositoryImpl(database.raw),
+      salaries: SalaryRepositoryImpl(database.raw),
+      expenses: expenseRepository,
+      fees: FeeRepositoryImpl(database.raw),
+    );
+
     runApp(
       SchoolOfficeApp(
         authService: authService,
@@ -73,6 +114,12 @@ Future<void> _startApp() async {
         importService: importService,
         employeeService: employeeService,
         salaryService: salaryService,
+        expenseService: expenseService,
+        reportExportService: reportExportService,
+        reportRepository: reportRepository,
+        settingsService: settingsService,
+        backupService: backupService,
+        dataExportService: dataExportService,
       ),
     );
   } catch (_) {

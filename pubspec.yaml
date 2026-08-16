@@ -40,6 +40,9 @@ dependencies:
   sqflite_common_ffi: ^2.3.0
   sqlite3_flutter_libs: ^0.5.0
 
+  # Internationalization date/formatting.
+  intl: ^0.18.0
+
   # File locations / path helpers.
   path: ^1.9.0
   path_provider: ^2.1.0

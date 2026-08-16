@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../family/domain/services/family_service.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../domain/entities/student.dart';
 import '../domain/services/student_service.dart';
 import 'student_details_screen.dart';
@@ -13,10 +14,12 @@ class StudentListScreen extends StatefulWidget {
     super.key,
     required this.studentService,
     required this.familyService,
+    required this.settingsService,
   });
 
   final StudentService studentService;
   final FamilyService familyService;
+  final SettingsService settingsService;
 
   @override
   State<StudentListScreen> createState() => _StudentListScreenState();
@@ -35,6 +38,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
         builder: (_) => StudentFormScreen(
           studentService: widget.studentService,
           familyService: widget.familyService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -47,6 +51,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
         builder: (_) => StudentDetailsScreen(
           studentService: widget.studentService,
           familyService: widget.familyService,
+          settingsService: widget.settingsService,
           studentId: student.id,
         ),
       ),

@@ -6,6 +6,7 @@ import '../../family/domain/entities/family.dart';
 import '../../family/domain/entities/family_list_item.dart';
 import '../../family/domain/services/family_service.dart';
 import '../../family/presentation/family_form_screen.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../../student/domain/entities/student.dart';
 import '../../student/domain/entities/student_list_item.dart';
 import '../../student/domain/services/student_service.dart';
@@ -36,10 +37,12 @@ class AdmissionWizardScreen extends StatefulWidget {
     super.key,
     required this.studentService,
     required this.familyService,
+    required this.settingsService,
   });
 
   final StudentService studentService;
   final FamilyService familyService;
+  final SettingsService settingsService;
 
   @override
   State<AdmissionWizardScreen> createState() => _AdmissionWizardScreenState();
@@ -61,12 +64,12 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
   late final TextEditingController _dob;
   late final TextEditingController _admissionNumber;
   late final TextEditingController _admissionDate;
-  late final TextEditingController _class;
-  late final TextEditingController _section;
   late final TextEditingController _fee;
   late final TextEditingController _notes;
 
   StudentGender? _gender;
+  String? _className;
+  String? _sectionName;
   String? _studentId;
   bool _checking = false;
   bool _saving = false;
@@ -79,8 +82,6 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
     _dob = TextEditingController();
     _admissionNumber = TextEditingController();
     _admissionDate = TextEditingController(text: today);
-    _class = TextEditingController();
-    _section = TextEditingController();
     _fee = TextEditingController();
     _notes = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -94,8 +95,6 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
     _dob.dispose();
     _admissionNumber.dispose();
     _admissionDate.dispose();
-    _class.dispose();
-    _section.dispose();
     _fee.dispose();
     _notes.dispose();
     super.dispose();
@@ -120,6 +119,7 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
         builder: (_) => FamilyFormScreen(
           familyService: widget.familyService,
           studentService: widget.studentService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -199,6 +199,30 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
     if (picked != null) controller.text = _isoDate(picked);
   }
 
+  /// Active classes from School Settings, plus the current value when it is no
+  /// longer in the list (legacy free-text values stay editable).
+  List<String> _classOptions() {
+    final active = widget.settingsService.activeClasses
+        .map((c) => c.className)
+        .toList();
+    final current = _className;
+    if (current != null && current.isNotEmpty && !active.contains(current)) {
+      return [...active, current];
+    }
+    return active;
+  }
+
+  List<String> _sectionOptions() {
+    final active = widget.settingsService.activeSections
+        .map((s) => s.sectionName)
+        .toList();
+    final current = _sectionName;
+    if (current != null && current.isNotEmpty && !active.contains(current)) {
+      return [...active, current];
+    }
+    return active;
+  }
+
   Future<void> _continueToReview() async {
     if (!_formKey.currentState!.validate()) return;
     final family = _family!;
@@ -226,6 +250,7 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
             builder: (_) => StudentDetailsScreen(
               studentService: widget.studentService,
               familyService: widget.familyService,
+              settingsService: widget.settingsService,
               studentId: decision.student.id,
             ),
           ),
@@ -313,8 +338,8 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
         dateOfBirth: _parseIsoDate(_dob.text),
         admissionNumber: _admissionNumber.text,
         admissionDate: _parseIsoDate(_admissionDate.text),
-        className: _class.text,
-        section: _section.text,
+        className: (_className ?? '').trim(),
+        section: (_sectionName ?? '').trim(),
         notes: _notes.text,
         admissionFee: double.tryParse(_fee.text.trim()) ?? 0,
       );
@@ -324,6 +349,7 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
           builder: (_) => AdmissionSuccessScreen(
             studentService: widget.studentService,
             familyService: widget.familyService,
+            settingsService: widget.settingsService,
             student: created,
             family: family,
             admissionNumber: _admissionNumber.text.trim(),
@@ -686,28 +712,50 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: TextFormField(
+                child: DropdownButtonFormField<String>(
                   key: const Key('adm_class'),
-                  controller: _class,
-                  textInputAction: TextInputAction.next,
+                  initialValue: _className,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Class',
-                    hintText: 'e.g. Class 5',
                     border: OutlineInputBorder(),
                   ),
+                  items: [
+                    const DropdownMenuItem<String>(
+                      value: null,
+                      child: Text('Select class'),
+                    ),
+                    for (final name in _classOptions())
+                      DropdownMenuItem<String>(
+                        value: name,
+                        child: Text(name),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() => _className = value),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: TextFormField(
+                child: DropdownButtonFormField<String>(
                   key: const Key('adm_section'),
-                  controller: _section,
-                  textInputAction: TextInputAction.next,
+                  initialValue: _sectionName,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Section',
-                    hintText: 'e.g. A',
                     border: OutlineInputBorder(),
                   ),
+                  items: [
+                    const DropdownMenuItem<String>(
+                      value: null,
+                      child: Text('Select section'),
+                    ),
+                    for (final name in _sectionOptions())
+                      DropdownMenuItem<String>(
+                        value: name,
+                        child: Text(name),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() => _sectionName = value),
                 ),
               ),
             ],
@@ -808,8 +856,8 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
             family.primaryPhone!,
         ]),
         _reviewRow(theme, 'Student', [?_studentId, _name.text.trim()]),
-        _reviewRow(theme, 'Class', [_class.text.trim()]),
-        _reviewRow(theme, 'Section', [_section.text.trim()]),
+        _reviewRow(theme, 'Class', [(_className ?? '').trim()]),
+        _reviewRow(theme, 'Section', [(_sectionName ?? '').trim()]),
         _reviewRow(theme, 'Admission date', [_admissionDate.text.trim()]),
         _reviewRow(theme, 'Admission number', [_admissionNumber.text.trim()]),
         _reviewRow(theme, 'Admission fee', [

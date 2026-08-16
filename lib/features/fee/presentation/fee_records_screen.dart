@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/utils/formatters.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../application/fee_service.dart';
 import '../domain/entities/fee_period.dart';
 import '../domain/entities/fee_record_list_item.dart';
@@ -11,9 +12,14 @@ import 'widgets/month_period_picker.dart';
 
 /// Searches monthly fee records by student, class, month and payment status.
 class FeeRecordsScreen extends StatefulWidget {
-  const FeeRecordsScreen({super.key, required this.feeService});
+  const FeeRecordsScreen({
+    super.key,
+    required this.feeService,
+    required this.settingsService,
+  });
 
   final FeeService feeService;
+  final SettingsService settingsService;
 
   @override
   State<FeeRecordsScreen> createState() => _FeeRecordsScreenState();
@@ -107,6 +113,7 @@ class _FeeRecordsScreenState extends State<FeeRecordsScreen> {
       MaterialPageRoute<void>(
         builder: (_) => FeeRecordDetailScreen(
           feeService: widget.feeService,
+          settingsService: widget.settingsService,
           recordId: item.record.id,
         ),
       ),

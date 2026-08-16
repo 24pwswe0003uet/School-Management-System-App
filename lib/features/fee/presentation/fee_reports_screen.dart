@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/utils/formatters.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../application/fee_service.dart';
 import '../domain/entities/family_outstanding_row.dart';
 import '../domain/entities/fee_period.dart';
@@ -15,9 +16,14 @@ import 'widgets/month_period_picker.dart';
 /// The five key fee reports: monthly collection, unpaid students, total
 /// outstanding, family outstanding and a student's fee history.
 class FeeReportsScreen extends StatefulWidget {
-  const FeeReportsScreen({super.key, required this.feeService});
+  const FeeReportsScreen({
+    super.key,
+    required this.feeService,
+    required this.settingsService,
+  });
 
   final FeeService feeService;
+  final SettingsService settingsService;
 
   @override
   State<FeeReportsScreen> createState() => _FeeReportsScreenState();
@@ -64,11 +70,15 @@ class _FeeReportsScreenState extends State<FeeReportsScreen> {
                   _UnpaidTab(
                     key: ValueKey(_period),
                     feeService: widget.feeService,
+                    settingsService: widget.settingsService,
                     period: _period,
                   ),
                   _OutstandingTab(feeService: widget.feeService),
                   _FamiliesTab(feeService: widget.feeService),
-                  _HistoryTab(feeService: widget.feeService),
+                  _HistoryTab(
+                    feeService: widget.feeService,
+                    settingsService: widget.settingsService,
+                  ),
                 ],
               ),
             ),
@@ -209,9 +219,15 @@ class _CollectionTabState extends State<_CollectionTab> {
 }
 
 class _UnpaidTab extends StatefulWidget {
-  const _UnpaidTab({super.key, required this.feeService, required this.period});
+  const _UnpaidTab({
+    super.key,
+    required this.feeService,
+    required this.settingsService,
+    required this.period,
+  });
 
   final FeeService feeService;
+  final SettingsService settingsService;
   final FeePeriod period;
 
   @override
@@ -256,6 +272,7 @@ class _UnpaidTabState extends State<_UnpaidTab> {
       MaterialPageRoute<void>(
         builder: (_) => FeeRecordDetailScreen(
           feeService: widget.feeService,
+          settingsService: widget.settingsService,
           recordId: row.record.id,
         ),
       ),
@@ -511,9 +528,13 @@ class _FamiliesTabState extends State<_FamiliesTab> {
 }
 
 class _HistoryTab extends StatefulWidget {
-  const _HistoryTab({required this.feeService});
+  const _HistoryTab({
+    required this.feeService,
+    required this.settingsService,
+  });
 
   final FeeService feeService;
+  final SettingsService settingsService;
 
   @override
   State<_HistoryTab> createState() => _HistoryTabState();
@@ -599,6 +620,7 @@ class _HistoryTabState extends State<_HistoryTab> {
       MaterialPageRoute<void>(
         builder: (_) => FeeRecordDetailScreen(
           feeService: widget.feeService,
+          settingsService: widget.settingsService,
           recordId: record.id,
         ),
       ),

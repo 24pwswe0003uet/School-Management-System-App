@@ -43,7 +43,12 @@ class AppDatabase {
   /// On the web there is no filesystem; the WASM backend stores the database
   /// under [fileName] in the browser's IndexedDB-backed worker storage.
   static Future<String> defaultPath() async {
-    if (kIsWeb) return fileName;
+    if (kIsWeb) {
+      // On Web, use the application support directory for IndexedDB persistence
+      // This ensures the database is stored in a consistent location across sessions
+      final directory = await getApplicationSupportDirectory();
+      return p.join(directory.path, fileName);
+    }
     final directory = await getApplicationSupportDirectory();
     return p.join(directory.path, fileName);
   }

@@ -1,0 +1,373 @@
+﻿00:00 +0: loading C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart
+00:00 +0: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService hashes and verifies a correct password
+00:02 +1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/admission/admission_wizard_test.dart: AdmissionWizardScreen new family admission creates the family, student and record
+00:02 +1 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/admission/admission_wizard_test.dart: AdmissionWizardScreen new family admission creates the family, student and record
+00:02 +1 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: users table / migration schema_versions and users tables exist after open [E]
+  Expected: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    Actual: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+     Which: at location [10] is [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] which longer than expected
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\features\auth\auth_repository_test.dart 36:7   main.<fn>.<fn>
+  
+00:04 +2 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/admission/admission_wizard_test.dart: AdmissionWizardScreen new family admission creates the family, student and record
+00:05 +3 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/admission/admission_wizard_test.dart: AdmissionWizardScreen new family admission creates the family, student and record
+00:05 +4 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +5 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +6 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +7 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +8 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +9 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +10 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +11 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +12 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +13 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +14 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +15 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +16 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +17 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:06 +18 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:07 +19 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:08 +20 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService uses a unique salt per hash (same password hashes differently)
+00:09 +21 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/login_screen_test.dart: LoginScreen renders branding, fields and login button
+00:09 +22 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/login_screen_test.dart: LoginScreen renders branding, fields and login button
+00:10 +23 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 2. wrong password returns null
+00:10 +24 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 2. wrong password returns null
+00:10 +25 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/admission/admission_wizard_test.dart: AdmissionWizardScreen a same-name candidate in the same family is warned but can be admitted
+00:10 +26 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/login_screen_test.dart: LoginScreen 4. empty fields show validation messages and do not call repo
+00:10 +27 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/login_screen_test.dart: LoginScreen 4. empty fields show validation messages and do not call repo
+00:10 +28 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/login_screen_test.dart: LoginScreen 4. empty fields show validation messages and do not call repo
+00:11 +29 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/login_screen_test.dart: LoginScreen 4. empty fields show validation messages and do not call repo
+00:11 +30 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/login_screen_test.dart: LoginScreen 4. empty fields show validation messages and do not call repo
+00:11 +31 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService never contains the plain-text password
+00:11 +32 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService never contains the plain-text password
+00:11 +33 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService never contains the plain-text password
+00:11 +34 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService never contains the plain-text password
+00:11 +35 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/core/secure_password_service_test.dart: SecurePasswordService never contains the plain-text password
+00:11 +36 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:11 +37 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:11 +38 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:11 +39 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:11 +40 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +41 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +42 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +43 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +44 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +45 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +46 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +47 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:12 +48 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:13 +49 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:13 +50 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:13 +51 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 3. unknown account returns null
+00:14 +52 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/admission/admission_wizard_test.dart: AdmissionWizardScreen success screen starts a new admission and returns to dashboard
+00:15 +53 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/admission/admission_wizard_test.dart: AdmissionWizardScreen success screen starts a new admission and returns to dashboard
+00:15 +54 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:15 +55 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:15 +56 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:16 +57 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:16 +58 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:16 +59 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:16 +60 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:16 +61 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/dashboard/dashboard_screen_test.dart: DashboardScreen renders header with user, role, date and logout
+00:16 +62 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:16 +63 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:16 +64 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:16 +65 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:16 +66 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:16 +67 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:17 +68 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:17 +69 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:17 +70 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:17 +71 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 5. inactive account fails to authenticate
+00:17 +72 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:17 +73 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:17 +74 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:17 +75 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:17 +76 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:17 +77 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:17 +78 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:17 +79 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +80 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +81 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +82 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +83 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +84 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +85 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +86 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:18 +87 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:19 +88 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:19 +89 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen lists employees with IDs, categories and statuses
+00:19 +90 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:19 +91 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:19 +92 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:19 +93 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:19 +94 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +95 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +96 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +97 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +98 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +99 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +100 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +101 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +102 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +103 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +104 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +105 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:20 +106 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:21 +107 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:21 +108 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:21 +109 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:21 +110 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:21 +111 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl duplicate username is rejected by unique constraint
+00:21 +112 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen category filter narrows the list
+00:21 +113 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeListScreen category filter narrows the list
+00:21 +114 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:21 +115 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:21 +116 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:21 +117 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:21 +118 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:21 +119 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:21 +120 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:22 +121 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:22 +122 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:22 +123 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:22 +124 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:22 +125 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:22 +126 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:22 +127 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:23 +128 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:23 +129 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:23 +130 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen lists families with IDs and guardian names
+00:23 +131 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl returned AppUser exposes only safe fields (no hash)
+00:23 +132 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl returned AppUser exposes only safe fields (no hash)
+00:24 +133 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen validates required and malformed fields
+00:24 +134 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen search filters the family list
+00:24 +135 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/fee/fee_repository_test.dart: fee structures creates a class rule and a default rule with sequential IDs
+00:24 +136 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:24 +137 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:24 +138 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:24 +139 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:24 +140 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:24 +141 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +142 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +143 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +144 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +145 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +146 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +147 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +148 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +149 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +150 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +151 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +152 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +153 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +154 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +155 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +156 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/auth/auth_repository_test.dart: AuthRepositoryImpl 8. database unavailable surfaces an error to the caller
+00:25 +157 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen opens the create form via the FAB
+00:25 +158 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyListScreen opens the create form via the FAB
+00:25 +159 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen duplicate warning Cancel aborts the save
+00:25 +160 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen duplicate warning Cancel aborts the save
+00:26 +161 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen duplicate warning Cancel aborts the save
+00:26 +162 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen duplicate warning Cancel aborts the save
+00:26 +163 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen duplicate warning Cancel aborts the save
+00:26 +164 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen duplicate warning Cancel aborts the save
+00:26 +165 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen duplicate warning Cancel aborts the save
+00:26 +166 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen validates required and malformed fields
+00:26 +167 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen validates required and malformed fields
+00:26 +168 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen validates required and malformed fields
+00:26 +169 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen validates required and malformed fields
+00:26 +170 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen validates required and malformed fields
+00:26 +171 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen validates required and malformed fields
+00:27 +172 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen Create anyway saves a second employee
+00:27 +173 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen Create anyway saves a second employee
+00:27 +174 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen Create anyway saves a second employee
+00:27 +175 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen Create anyway saves a second employee
+00:27 +176 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen Create anyway saves a second employee
+00:27 +177 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen creates a family and pops with the result
+00:27 +178 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen creates a family and pops with the result
+00:27 +179 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen creates a family and pops with the result
+00:27 +180 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:27 +181 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:27 +182 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:27 +183 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:28 +184 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:28 +185 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:28 +186 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:28 +187 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen View opens the matched employee profile
+00:28 +188 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen duplicate warning Cancel aborts the save
+00:28 +189 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen duplicate warning Cancel aborts the save
+00:28 +190 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen duplicate warning Cancel aborts the save
+00:28 +191 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen duplicate warning Cancel aborts the save
+00:28 +192 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen edit mode prefills values and saves changes
+00:28 +193 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen edit mode prefills values and saves changes
+00:28 +194 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen edit mode prefills values and saves changes
+00:28 +195 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen edit mode prefills values and saves changes
+00:28 +196 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen edit mode prefills values and saves changes
+00:28 +197 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen edit mode prefills values and saves changes
+00:28 +198 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeFormScreen edit mode prefills values and saves changes
+00:28 +199 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen Create anyway saves a second family
+00:29 +200 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen Create anyway saves a second family
+00:29 +201 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen deactivate and reactivate toggle the status
+00:29 +202 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen View opens the matched family profile
+00:29 +203 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen View opens the matched family profile
+00:30 +204 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyFormScreen View opens the matched family profile
+00:30 +205 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/excel_reader_test.dart: load exposes sheet names and readSheet returns plain values
+00:30 +206 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +207 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +208 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +209 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +210 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +211 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +212 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +213 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/employee/employee_screen_test.dart: EmployeeDetailsScreen edit opens the prefilled form and details refresh
+00:30 +214 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen shows family info, students and outstanding fees
+00:30 +215 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen shows family info, students and outstanding fees
+00:30 +216 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen add another child opens the student form preselected
+00:31 +217 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/export_service_test.dart: exportStudents writes an importable workbook with custom field columns
+00:31 +218 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/export_service_test.dart: exportStudents writes an importable workbook with custom field columns
+00:31 +219 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen delete is blocked when students exist, archive offered
+00:31 +220 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen delete is blocked when students exist, archive offered
+00:31 +221 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen delete is blocked when students exist, archive offered
+00:31 +222 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen delete is blocked when students exist, archive offered
+00:31 +223 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen delete is blocked when students exist, archive offered
+00:31 +224 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen deleting an empty family confirms and pops
+00:32 +225 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/family/family_screen_test.dart: FamilyDetailsScreen edit opens the prefilled form and details refresh
+00:34 +226 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan valid rows are grouped and importable
+00:34 +227 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan missing names are invalid
+00:34 +228 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan admission numbers already in the database are duplicates
+00:34 +229 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan admission numbers repeated within the file are duplicates
+00:34 +230 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan existing student IDs are duplicates
+00:34 +231 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan same name + phone as a DB student is a possible duplicate
+00:34 +232 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan family matching by phone flags possible duplicate families
+00:34 +233 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan existing family IDs resolve to that family
+00:34 +234 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan unknown existing family ID invalidates the row
+00:34 +235 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_planner_test.dart: ImportPlanner.plan 1000 clean rows produce 1000 families with no errors
+00:35 +236 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_repository_impl_test.dart: (setUpAll)
+00:35 +236 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_repository_impl_test.dart: custom field definitions createCustomField persists a sequential definition
+00:35 +237 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_repository_impl_test.dart: custom field definitions findCustomField matches by field name or display name, normalized
+00:35 +238 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_repository_impl_test.dart: custom field definitions saveCustomFieldValue inserts then updates in place
+00:36 +239 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_repository_impl_test.dart: importPlan imports groups with sequential IDs and admission fee
+00:36 +240 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_repository_impl_test.dart: importPlan creates custom fields once and stores values idempotently
+00:36 +241 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:36 +242 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:36 +243 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:36 +244 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:36 +245 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:36 +246 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +247 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +248 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +249 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +250 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +251 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +252 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +253 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +254 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +255 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +256 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +257 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +258 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:37 +259 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +260 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +261 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +262 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +263 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +264 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +265 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +266 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:38 +267 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:39 +268 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: runs the full pick -> sheet -> map -> preview -> import flow
+00:39 +269 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: a cancel in the file dialog stays on the pick step
+00:39 +270 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/import/import_screen_test.dart: an invalid workbook shows the error banner
+00:40 +271 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: (setUpAll)
+00:40 +271 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary auto-assigns codes, stores components and derives net
+00:40 +272 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary paid record stores the payment date
+00:41 +273 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary paid record without a payment date is rejected
+00:41 +274 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary clamps a negative net to zero
+00:41 +275 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary rejects negative components
+00:41 +276 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary rejects a record for a nonexistent employee
+00:41 +277 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary one record per employee and month throws SalaryPeriodExistsException
+00:41 +278 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: createSalary same month is fine for a different employee
+00:41 +279 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: getSalaryForPeriod and history returns null when no record exists for the employee and month
+00:41 +280 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: getSalaryForPeriod and history returns the matching record
+00:41 +281 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_repository_test.dart: getSalaryForPeriod and history history is ordered newest first
+00:42 +282 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +283 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +284 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +285 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +286 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +287 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +288 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +289 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:42 +290 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +291 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +292 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +293 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +294 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +295 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +296 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +297 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +298 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +299 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +300 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:43 +301 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +302 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +303 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +304 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +305 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +306 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +307 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +308 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +309 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryScreen hub shows menu tiles and opens the records screen
+00:44 +310 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +311 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +312 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +313 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +314 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +315 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +316 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +317 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +318 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +319 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +320 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +321 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:45 +322 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:46 +323 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:46 +324 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:46 +325 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:46 +326 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:46 +327 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:47 +328 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen lists students with IDs, class, family and status
+00:47 +329 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen create flow: pick employee, autofill base, preview net, save
+00:47 +330 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen create flow: pick employee, autofill base, preview net, save
+00:48 +331 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen search filters by student name
+00:48 +332 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen duplicate create switches to editing the existing record
+00:48 +333 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen duplicate create switches to editing the existing record
+00:48 +334 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen duplicate create switches to editing the existing record
+00:49 +335 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen status filter narrows the list
+00:49 +336 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen paid status requires a payment date
+00:49 +337 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen paid status requires a payment date
+00:50 +338 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen shows an error state and recovers via retry
+00:50 +339 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryFormScreen clamped net preview warns when adjustments exceed base
+00:50 +340 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen opens the create form via the FAB
+00:50 +341 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen opens the create form via the FAB
+00:50 +342 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryRecordDetailScreen mark paid opens a date picker that can be cancelled
+00:51 +343 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentListScreen tapping a student card opens its details
+00:51 +344 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryRecordDetailScreen delete of a pending record confirms and removes it
+00:51 +345 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen validates the name and requires a family
+00:52 +346 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen validates the name and requires a family
+00:52 +347 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/salary/salary_screen_test.dart: SalaryRecordDetailScreen editing a pending record opens the form directly
+00:52 +348 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen creates a student after picking a family
+00:52 +349 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen offers to create a family and auto-selects it
+00:53 +350 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen duplicate warning Cancel aborts the save
+00:54 +351 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen Save anyway creates a second student
+00:55 +352 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen View opens the matched student profile
+00:56 +353 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentFormScreen edit mode prefills values and saves changes
+00:56 +354 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentDetailsScreen shows personal, family, academic, fee and history cards
+00:56 +355 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentDetailsScreen shows empty fee/admission/history placeholders
+00:56 +356 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentDetailsScreen change status updates the profile and history
+00:57 +357 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentDetailsScreen opens the linked family profile
+00:57 +358 -1: C:/Users/msaad/OneDrive/Desktop/SchoolManagementSystem/test/features/student/student_screen_test.dart: StudentDetailsScreen edit opens the prefilled form and details refresh
+00:57 +359 -1: Some tests failed.

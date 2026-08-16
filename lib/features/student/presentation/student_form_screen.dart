@@ -5,6 +5,7 @@ import '../../family/domain/entities/family.dart';
 import '../../family/domain/entities/family_list_item.dart';
 import '../../family/domain/services/family_service.dart';
 import '../../family/presentation/family_form_screen.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../domain/entities/student.dart';
 import '../domain/entities/student_list_item.dart';
 import '../domain/services/student_service.dart';
@@ -19,12 +20,14 @@ class StudentFormScreen extends StatefulWidget {
     super.key,
     required this.studentService,
     required this.familyService,
+    required this.settingsService,
     this.existing,
     this.preselectedFamilyId,
   });
 
   final StudentService studentService;
   final FamilyService familyService;
+  final SettingsService settingsService;
   final Student? existing;
 
   /// When opened from a family profile, the form starts with this family
@@ -54,8 +57,6 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   late final TextEditingController _dob;
   late final TextEditingController _admissionNumber;
   late final TextEditingController _admissionDate;
-  late final TextEditingController _class;
-  late final TextEditingController _section;
   late final TextEditingController _contactReference;
   late final TextEditingController _notes;
 
@@ -64,6 +65,9 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
   String? _studentId;
   bool _submitting = false;
   String? _familyError;
+
+  String? _className;
+  String? _sectionName;
 
   bool _pickingFamily = false;
   List<FamilyListItem> _familyResults = const [];
@@ -90,8 +94,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           ? ''
           : _isoDate(existing!.admissionDate!),
     );
-    _class = TextEditingController(text: existing?.className ?? '');
-    _section = TextEditingController(text: existing?.section ?? '');
+    _className = existing?.className;
+    _sectionName = existing?.section;
     _contactReference = TextEditingController(
       text: existing?.contactReference ?? '',
     );
@@ -122,8 +126,6 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     _dob.dispose();
     _admissionNumber.dispose();
     _admissionDate.dispose();
-    _class.dispose();
-    _section.dispose();
     _contactReference.dispose();
     _notes.dispose();
     super.dispose();
@@ -159,6 +161,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         builder: (_) => FamilyFormScreen(
           familyService: widget.familyService,
           studentService: widget.studentService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -207,6 +210,30 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
     if (picked != null) controller.text = _isoDate(picked);
   }
 
+  /// Active classes from School Settings, plus the student's current value
+  /// when it is no longer in the list (legacy free-text values stay editable).
+  List<String> _classOptions() {
+    final active = widget.settingsService.activeClasses
+        .map((c) => c.className)
+        .toList();
+    final current = _className;
+    if (current != null && current.isNotEmpty && !active.contains(current)) {
+      return [...active, current];
+    }
+    return active;
+  }
+
+  List<String> _sectionOptions() {
+    final active = widget.settingsService.activeSections
+        .map((s) => s.sectionName)
+        .toList();
+    final current = _sectionName;
+    if (current != null && current.isNotEmpty && !active.contains(current)) {
+      return [...active, current];
+    }
+    return active;
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_family == null) {
@@ -247,6 +274,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                 builder: (_) => StudentDetailsScreen(
                   studentService: service,
                   familyService: widget.familyService,
+                  settingsService: widget.settingsService,
                   studentId: decision.student.id,
                 ),
               ),
@@ -261,8 +289,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           dateOfBirth: dob,
           admissionNumber: admissionNumber,
           admissionDate: admissionDate,
-          className: _class.text,
-          section: _section.text,
+          className: (_className ?? '').trim(),
+          section: (_sectionName ?? '').trim(),
           contactReference: _contactReference.text,
           notes: _notes.text,
         );
@@ -277,8 +305,8 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
           dateOfBirth: dob,
           admissionNumber: admissionNumber,
           admissionDate: admissionDate,
-          className: _class.text,
-          section: _section.text,
+          className: (_className ?? '').trim(),
+          section: (_sectionName ?? '').trim(),
           contactReference: _contactReference.text,
           notes: _notes.text,
         );
@@ -470,28 +498,52 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: TextFormField(
+                            child: DropdownButtonFormField<String>(
                               key: const Key('student_class'),
-                              controller: _class,
-                              textInputAction: TextInputAction.next,
+                              initialValue: _className,
+                              isExpanded: true,
                               decoration: const InputDecoration(
                                 labelText: 'Class',
-                                hintText: 'e.g. Class 5',
                                 border: OutlineInputBorder(),
                               ),
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('Select class'),
+                                ),
+                                for (final name in _classOptions())
+                                  DropdownMenuItem<String>(
+                                    value: name,
+                                    child: Text(name),
+                                  ),
+                              ],
+                              onChanged: (value) =>
+                                  setState(() => _className = value),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: TextFormField(
+                            child: DropdownButtonFormField<String>(
                               key: const Key('student_section'),
-                              controller: _section,
-                              textInputAction: TextInputAction.next,
+                              initialValue: _sectionName,
+                              isExpanded: true,
                               decoration: const InputDecoration(
                                 labelText: 'Section',
-                                hintText: 'e.g. A',
                                 border: OutlineInputBorder(),
                               ),
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: null,
+                                  child: Text('Select section'),
+                                ),
+                                for (final name in _sectionOptions())
+                                  DropdownMenuItem<String>(
+                                    value: name,
+                                    child: Text(name),
+                                  ),
+                              ],
+                              onChanged: (value) =>
+                                  setState(() => _sectionName = value),
                             ),
                           ),
                         ],

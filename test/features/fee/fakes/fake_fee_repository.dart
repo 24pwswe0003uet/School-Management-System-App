@@ -7,11 +7,11 @@ import 'package:school_office_management/features/fee/domain/entities/fee_record
 import 'package:school_office_management/features/fee/domain/entities/fee_status.dart';
 import 'package:school_office_management/features/fee/domain/entities/fee_structure.dart';
 import 'package:school_office_management/features/fee/domain/entities/fee_student_pick.dart';
+import 'package:school_office_management/features/fee/domain/repositories/fee_repository.dart';
 import 'package:school_office_management/features/fee/domain/entities/monthly_collection_report.dart';
 import 'package:school_office_management/features/fee/domain/entities/payment_record.dart';
 import 'package:school_office_management/features/fee/domain/entities/receipt_data.dart';
 import 'package:school_office_management/features/fee/domain/entities/unpaid_student_row.dart';
-import 'package:school_office_management/features/fee/domain/repositories/fee_repository.dart';
 
 /// In-memory [FeeRepository] for widget tests. Mirrors the repository's
 /// business rules (overpayment rejection, unique receipts, auto IDs, status
@@ -89,6 +89,7 @@ class FakeFeeRepository implements FeeRepository {
   @override
   Future<FeeStructure> createFeeStructure({
     required String name,
+    required FeeType feeType,
     String? className,
     required double monthlyAmount,
     double discountAmount = 0,
@@ -103,6 +104,7 @@ class FakeFeeRepository implements FeeRepository {
       monthlyAmount: monthlyAmount,
       discountAmount: discountAmount,
       description: description,
+      feeType: feeType,
       isActive: true,
     );
     structures.add(structure);
@@ -113,6 +115,7 @@ class FakeFeeRepository implements FeeRepository {
   Future<FeeStructure> updateFeeStructure({
     required int id,
     required String name,
+    required FeeType feeType,
     String? className,
     required double monthlyAmount,
     double discountAmount = 0,
@@ -128,6 +131,7 @@ class FakeFeeRepository implements FeeRepository {
       monthlyAmount: monthlyAmount,
       discountAmount: discountAmount,
       description: description,
+      feeType: feeType,
       isActive: existing.isActive,
     );
     return structures[index];
@@ -145,6 +149,7 @@ class FakeFeeRepository implements FeeRepository {
       monthlyAmount: existing.monthlyAmount,
       discountAmount: existing.discountAmount,
       description: existing.description,
+      feeType: existing.feeType,
       isActive: isActive,
     );
   }

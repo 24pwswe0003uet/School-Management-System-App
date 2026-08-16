@@ -11,14 +11,19 @@ import 'package:school_office_management/features/employee/domain/services/emplo
 import 'package:school_office_management/features/family/domain/services/family_service.dart';
 import 'package:school_office_management/features/fee/application/fee_service.dart';
 import 'package:school_office_management/features/import/application/import_service.dart';
+import 'package:school_office_management/features/expense/domain/services/expense_service.dart';
 import 'package:school_office_management/features/salary/domain/services/salary_service.dart';
 import 'package:school_office_management/features/student/domain/services/student_service.dart';
+
+import '../reports/mock_repository.dart';
+import '../settings/helpers.dart';
 
 import '../dashboard/fakes/fake_dashboard_repository.dart';
 import '../employee/fakes/fake_employee_repository.dart';
 import '../family/fakes/fake_family_repository.dart';
 import '../fee/fakes/fake_fee_repository.dart';
 import '../import/fakes/fake_import_repository.dart';
+import '../expense/fakes/fake_expense_repository.dart';
 import '../salary/fakes/fake_salary_repository.dart';
 import '../student/fakes/fake_student_repository.dart';
 
@@ -94,6 +99,8 @@ void main() {
       EmployeeService(FakeEmployeeRepository());
 
   SalaryService salaryService() => SalaryService(FakeSalaryRepository());
+
+  ExpenseService expenseService() => ExpenseService(FakeExpenseRepository());
 
   Future<void> pumpLogin(WidgetTester tester, AuthService service) {
     return tester.pumpWidget(
@@ -218,6 +225,11 @@ void main() {
             importService: importService(),
             employeeService: employeeService(),
             salaryService: salaryService(),
+            expenseService: expenseService(),
+            reportRepository: MockReportRepository(),
+            settingsService: await buildTestSettingsService(
+              authService: service,
+            ),
           ),
         ),
       );
@@ -249,6 +261,11 @@ void main() {
             importService: importService(),
             employeeService: employeeService(),
             salaryService: salaryService(),
+            expenseService: expenseService(),
+            reportRepository: MockReportRepository(),
+            settingsService: await buildTestSettingsService(
+              authService: service,
+            ),
           ),
         ),
       );
@@ -298,6 +315,11 @@ void main() {
             importService: importService(),
             employeeService: employeeService(),
             salaryService: salaryService(),
+            expenseService: expenseService(),
+            reportRepository: MockReportRepository(),
+            settingsService: await buildTestSettingsService(
+              authService: service,
+            ),
           ),
         ),
       );

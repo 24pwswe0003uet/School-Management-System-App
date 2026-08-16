@@ -6,6 +6,7 @@ import 'package:school_office_management/features/fee/domain/entities/fee_record
 import 'package:school_office_management/features/fee/domain/entities/fee_status.dart';
 import 'package:school_office_management/features/fee/domain/entities/payment_record.dart';
 import 'package:school_office_management/features/fee/domain/repositories/fee_repository.dart';
+import 'package:school_office_management/features/fee/domain/entities/fee_structure.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -120,17 +121,19 @@ void main() {
       await openDb();
       final classRule = await repository.createFeeStructure(
         name: 'Class 5 Fee',
-        className: 'Class 5',
+        className: '5',
         monthlyAmount: 5000,
         discountAmount: 500,
+        feeType: FeeType.monthly,
       );
       final defaultRule = await repository.createFeeStructure(
         name: 'Default Fee',
         monthlyAmount: 3000,
+        feeType: FeeType.monthly,
       );
 
       expect(classRule.structureId, 'FS-000001');
-      expect(classRule.className, 'Class 5');
+      expect(classRule.className, '5');
       expect(classRule.monthlyAmount, 5000);
       expect(classRule.discountAmount, 500);
       expect(classRule.isDefault, isFalse);
@@ -143,46 +146,144 @@ void main() {
       expect(all, hasLength(2));
     });
 
-    test('a second rule for the same class is rejected', () async {
+    test('rejects second Monthly rule for same class', () async {
       await openDb();
       await repository.createFeeStructure(
-        name: 'First',
-        className: 'Class 5',
+        name: 'First Monthly',
+        className: '5',
         monthlyAmount: 5000,
+        feeType: FeeType.monthly,
       );
       await expectLater(
         repository.createFeeStructure(
-          name: 'Second',
-          className: 'Class 5',
+          name: 'Second Monthly',
+          className: '5',
           monthlyAmount: 4000,
+          feeType: FeeType.monthly,
         ),
-        throwsA(isA<ArgumentError>()),
+        throwsA(isA<ArgumentError>().having(
+          (e) => e.message,
+          'message',
+          contains('Monthly fee rule already exists for 5'),
+        )),
       );
     });
 
-    test('a second global default rule is rejected', () async {
+    test('rejects second Admission rule for same class', () async {
       await openDb();
       await repository.createFeeStructure(
-        name: 'Default 1',
+        name: 'First Admission',
+        className: '5',
         monthlyAmount: 5000,
+        feeType: FeeType.admission,
       );
       await expectLater(
         repository.createFeeStructure(
-          name: 'Default 2',
-          monthlyAmount: 4000,
+          name: 'Second Admission',
+          className: '5',
+          monthlyAmount: 6000,
+          feeType: FeeType.admission,
         ),
-        throwsA(isA<ArgumentError>()),
+        throwsA(isA<ArgumentError>().having(
+          (e) => e.message,
+          'message',
+          contains('Admission fee rule already exists for 5'),
+        )),
+      );
+    });
+
+    test('allows Admission and Monthly rules for the same class', () async {
+      await openDb();
+      await repository.createFeeStructure(
+        name: 'Class 5 Admission',
+        className: '5',
+        monthlyAmount: 5000,
+        feeType: FeeType.admission,
+      );
+      await repository.createFeeStructure(
+        name: 'Class 5 Monthly',
+        className: '5',
+        monthlyAmount: 1200,
+        feeType: FeeType.monthly,
+      );
+      final all = await repository.listFeeStructures();
+      expect(all, hasLength(2));
+    });
+
+    test('allows default Admission and default Monthly rules', () async {
+      await openDb();
+      await repository.createFeeStructure(
+        name: 'Default Admission',
+        monthlyAmount: 5000,
+        feeType: FeeType.admission,
+      );
+      await repository.createFeeStructure(
+        name: 'Default Monthly',
+        monthlyAmount: 1200,
+        feeType: FeeType.monthly,
+      );
+      final all = await repository.listFeeStructures();
+      expect(all, hasLength(2));
+    });
+
+    test('rejects second default Monthly rule', () async {
+      await openDb();
+      await repository.createFeeStructure(
+        name: 'Default Monthly 1',
+        monthlyAmount: 5000,
+        feeType: FeeType.monthly,
+      );
+      await expectLater(
+        repository.createFeeStructure(
+          name: 'Default Monthly 2',
+          monthlyAmount: 4000,
+          feeType: FeeType.monthly,
+        ),
+        throwsA(isA<ArgumentError>().having(
+          (e) => e.message,
+          'message',
+          contains('Monthly fee rule already exists for default'),
+        )),
+      );
+    });
+
+    test('rejects second default Admission rule', () async {
+      await openDb();
+      await repository.createFeeStructure(
+        name: 'Default Admission 1',
+        monthlyAmount: 5000,
+        feeType: FeeType.admission,
+      );
+      await expectLater(
+        repository.createFeeStructure(
+          name: 'Default Admission 2',
+          monthlyAmount: 4000,
+          feeType: FeeType.admission,
+        ),
+        throwsA(isA<ArgumentError>().having(
+          (e) => e.message,
+          'message',
+          contains('Admission fee rule already exists for default'),
+        )),
       );
     });
 
     test('rejects empty names and negative amounts', () async {
       await openDb();
       await expectLater(
-        repository.createFeeStructure(name: '  ', monthlyAmount: 1000),
+        repository.createFeeStructure(
+          name: '  ',
+          monthlyAmount: 1000,
+          feeType: FeeType.monthly,
+        ),
         throwsA(isA<ArgumentError>()),
       );
       await expectLater(
-        repository.createFeeStructure(name: 'X', monthlyAmount: -1),
+        repository.createFeeStructure(
+          name: 'X',
+          monthlyAmount: -1,
+          feeType: FeeType.monthly,
+        ),
         throwsA(isA<ArgumentError>()),
       );
       await expectLater(
@@ -190,6 +291,7 @@ void main() {
           name: 'X',
           monthlyAmount: 1000,
           discountAmount: -5,
+          feeType: FeeType.monthly,
         ),
         throwsA(isA<ArgumentError>()),
       );
@@ -199,8 +301,9 @@ void main() {
       await openDb();
       final rule = await repository.createFeeStructure(
         name: 'Class 5 Fee',
-        className: 'Class 5',
+        className: '5',
         monthlyAmount: 5000,
+        feeType: FeeType.monthly,
       );
 
       await repository.setFeeStructureActive(rule.id, false);
@@ -214,8 +317,9 @@ void main() {
       final updated = await repository.updateFeeStructure(
         id: rule.id,
         name: 'Class 5 Fee (updated)',
-        className: 'Class 5',
+        className: '5',
         monthlyAmount: 5500,
+        feeType: FeeType.monthly,
       );
       expect(updated.monthlyAmount, 5500);
       expect(updated.name, 'Class 5 Fee (updated)');
@@ -229,26 +333,28 @@ void main() {
         await openDb();
         await repository.createFeeStructure(
           name: 'Class 5 Fee',
-          className: 'Class 5',
+          className: '5',
           monthlyAmount: 5000,
           discountAmount: 500,
+          feeType: FeeType.monthly,
         );
         await repository.createFeeStructure(
           name: 'Default Fee',
           monthlyAmount: 3000,
+          feeType: FeeType.monthly,
         );
 
         final (_, ali) = await familyAndStudent(
           familyName: 'Khan',
           studentId: 'STU-1',
           studentName: 'Ali',
-          className: 'Class 5',
+          className: '5',
         );
         final (_, usman) = await familyAndStudent(
           familyName: 'Khan',
           studentId: 'STU-2',
           studentName: 'Usman',
-          className: 'Class 6',
+          className: '6',
         );
         final (_, fatima) = await familyAndStudent(
           familyName: 'Khan',
@@ -298,21 +404,22 @@ void main() {
       await openDb();
       await repository.createFeeStructure(
         name: 'Class 5 Fee',
-        className: 'Class 5',
+        className: '5',
         monthlyAmount: 5000,
+        feeType: FeeType.monthly,
       );
 
       final (_, withRule) = await familyAndStudent(
         familyName: 'Khan',
         studentId: 'STU-1',
         studentName: 'Ali',
-        className: 'Class 5',
+        className: '5',
       );
       final (_, noRule) = await familyAndStudent(
         familyName: 'Khan',
         studentId: 'STU-2',
         studentName: 'Usman',
-        className: 'Class 9',
+        className: '9',
       );
 
       final period = const FeePeriod(year: 2026, month: 8);
@@ -329,6 +436,7 @@ void main() {
       await repository.createFeeStructure(
         name: 'Default Fee',
         monthlyAmount: 4000,
+        feeType: FeeType.monthly,
       );
       await familyAndStudent(
         familyName: 'Khan',
@@ -339,7 +447,7 @@ void main() {
         familyId: await insertFamily(name: 'Left'),
         id: 'STU-2',
         name: 'Left Student',
-        className: 'Class 5',
+        className: '5',
         status: 'left',
       );
 
@@ -356,6 +464,7 @@ void main() {
       await repository.createFeeStructure(
         name: 'Default Fee',
         monthlyAmount: 4000,
+        feeType: FeeType.monthly,
       );
       await familyAndStudent(
         familyName: 'Khan',
@@ -384,6 +493,7 @@ void main() {
       await repository.createFeeStructure(
         name: 'Default Fee',
         monthlyAmount: 4000,
+        feeType: FeeType.monthly,
       );
       final (_, student) = await familyAndStudent(
         familyName: 'Khan',
@@ -412,6 +522,7 @@ void main() {
       await repository.createFeeStructure(
         name: 'Default Fee',
         monthlyAmount: 4000,
+        feeType: FeeType.monthly,
       );
       await familyAndStudent(
         familyName: 'Khan',
@@ -849,7 +960,7 @@ void main() {
         familyName: 'Ahmed Khan',
         studentId: 'STU-000001',
         studentName: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
       );
       final recordId = await insertFeeRecord(
         studentId: student,
@@ -1084,7 +1195,7 @@ void main() {
         familyName: 'Khan',
         studentId: 'STU-1',
         studentName: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
       );
       final (_, usman) = await familyAndStudent(
         familyName: 'Khan',
@@ -1144,7 +1255,7 @@ void main() {
       final aliRow = rows.first;
       expect(aliRow.studentId, 'STU-1');
       expect(aliRow.guardianName, 'Khan');
-      expect(aliRow.className, 'Class 5');
+      expect(aliRow.className, '5');
       expect(aliRow.record.remainingAmount, 5000);
       expect(aliRow.record.status, FeeStatus.unpaid);
       expect(rows[1].record.remainingAmount, 2000);
@@ -1303,7 +1414,7 @@ void main() {
         familyName: 'Ahmed Khan',
         studentId: 'STU-000001',
         studentName: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
       );
       final (_, usman) = await familyAndStudent(
         familyName: 'Sara Khan',
@@ -1343,13 +1454,13 @@ void main() {
         familyName: 'Khan',
         studentId: 'STU-1',
         studentName: 'Ali',
-        className: 'Class 5',
+        className: '5',
       );
       final (_, usman) = await familyAndStudent(
         familyName: 'Khan',
         studentId: 'STU-2',
         studentName: 'Usman',
-        className: 'Class 6',
+        className: '6',
       );
       await insertFeeRecord(
         studentId: ali,
@@ -1370,7 +1481,7 @@ void main() {
       );
 
       expect(
-        (await repository.searchFeeRecords(className: 'Class 5')).length,
+        (await repository.searchFeeRecords(className: '5')).length,
         1,
       );
       expect(

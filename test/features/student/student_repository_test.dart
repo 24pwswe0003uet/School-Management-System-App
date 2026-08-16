@@ -94,7 +94,7 @@ void main() {
           dateOfBirth: DateTime(2014, 5, 1),
           admissionNumber: 'ADM-2024-100',
           admissionDate: DateTime(2024, 3, 1),
-          className: 'Class 5',
+          className: '5',
           section: 'A',
         );
 
@@ -108,7 +108,7 @@ void main() {
         final details = await repository.getStudentDetails(student.id);
         expect(details.admissions, hasLength(1));
         expect(details.admissions.single.admissionId, 'ADM-000001');
-        expect(details.admissions.single.className, 'Class 5');
+        expect(details.admissions.single.className, '5');
       },
     );
 
@@ -183,7 +183,7 @@ void main() {
           name: 'Ali Khan',
           admissionNumber: 'ADM-2026-001',
           admissionDate: DateTime(2026, 8, 1),
-          className: 'Class 5',
+          className: '5',
           section: 'A',
           notes: 'Brought fee voucher',
           admissionFee: 5000,
@@ -194,7 +194,7 @@ void main() {
         expect(admission.admissionNumber, 'ADM-2026-001');
         expect(admission.admissionFee, 5000);
         expect(admission.notes, 'Brought fee voucher');
-        expect(admission.className, 'Class 5');
+        expect(admission.className, '5');
         expect(admission.section, 'A');
         expect(admission.admissionDate, DateTime(2026, 8, 1));
       },
@@ -275,7 +275,7 @@ void main() {
       final student = await repository.createStudent(
         familyId: family.id,
         name: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
         section: 'A',
         admissionDate: DateTime(2024, 3, 1),
       );
@@ -285,21 +285,21 @@ void main() {
         familyId: family.id,
         name: 'Ali Ahmed',
         gender: StudentGender.male,
-        className: 'Class 6',
+        className: '6',
         section: 'B',
         admissionDate: DateTime(2024, 3, 1),
       );
 
       expect(updated.name, 'Ali Ahmed');
-      expect(updated.className, 'Class 6');
+      expect(updated.className, '6');
       expect(updated.section, 'B');
 
       final details = await repository.getStudentDetails(student.id);
-      expect(details.student.className, 'Class 6');
+      expect(details.student.className, '6');
       expect(details.history, hasLength(1));
-      expect(details.history.single.className, 'Class 6');
+      expect(details.history.single.className, '6');
       expect(details.history.single.section, 'B');
-      expect(details.admissions.single.className, 'Class 5');
+      expect(details.admissions.single.className, '5');
     });
 
     test('edit without class/section change appends no history', () async {
@@ -308,14 +308,14 @@ void main() {
       final student = await repository.createStudent(
         familyId: family.id,
         name: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
       );
 
       await repository.updateStudent(
         id: student.id,
         familyId: family.id,
         name: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
       );
 
       final details = await repository.getStudentDetails(student.id);
@@ -330,7 +330,7 @@ void main() {
         final student = await repository.createStudent(
           familyId: family.id,
           name: 'Ali Khan',
-          className: 'Class 5',
+          className: '5',
         );
 
         final left = await repository.setStudentStatus(
@@ -349,7 +349,7 @@ void main() {
         expect(details.history, hasLength(2));
         expect(details.history.first.status, 'transferred');
         expect(details.history.last.status, 'left');
-        expect(details.history.first.className, 'Class 5');
+        expect(details.history.first.className, '5');
       },
     );
   });
@@ -429,16 +429,16 @@ void main() {
       final a = await repository.createStudent(
         familyId: family.id,
         name: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
       );
       await repository.createStudent(
         familyId: family.id,
         name: 'Sara Khan',
-        className: 'Class 3',
+        className: '3',
       );
       await repository.setStudentStatus(a.id, StudentStatus.left);
 
-      final byClass = await repository.searchStudents(className: 'Class 5');
+      final byClass = await repository.searchStudents(className: '5');
       expect(byClass, hasLength(1));
       expect(byClass.single.student.name, 'Ali Khan');
 
@@ -449,7 +449,7 @@ void main() {
 
       final combined = await repository.searchStudents(
         status: StudentStatus.active,
-        className: 'Class 3',
+        className: '3',
       );
       expect(combined, hasLength(1));
       expect(combined.single.student.name, 'Sara Khan');
@@ -461,17 +461,17 @@ void main() {
       await repository.createStudent(
         familyId: family.id,
         name: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
         section: 'A',
       );
       await repository.createStudent(
         familyId: family.id,
         name: 'Sara Khan',
-        className: 'Class 3',
+        className: '3',
         section: 'B',
       );
 
-      expect(await repository.distinctClasses(), ['Class 3', 'Class 5']);
+      expect(await repository.distinctClasses(), ['3', '5']);
       expect(await repository.distinctSections(), ['A', 'B']);
     });
   });
@@ -563,7 +563,7 @@ void main() {
       final student = await repository.createStudent(
         familyId: family.id,
         name: 'Ali Khan',
-        className: 'Class 5',
+        className: '5',
         admissionDate: DateTime(2024, 3, 1),
       );
       await repository.setStudentStatus(student.id, StudentStatus.active);
@@ -655,7 +655,7 @@ void main() {
       sw
         ..reset()
         ..start();
-      final byClass = await repository.searchStudents(className: 'Class 7');
+      final byClass = await repository.searchStudents(className: '7');
       final classMs = sw.elapsedMilliseconds;
       expect(byClass.length, lessThanOrEqualTo(100));
 

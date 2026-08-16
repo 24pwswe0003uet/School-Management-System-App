@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/widgets/loading_button.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../../student/domain/services/student_service.dart';
 import '../domain/entities/family.dart';
 import '../domain/services/family_service.dart';
@@ -13,11 +14,13 @@ class FamilyFormScreen extends StatefulWidget {
     super.key,
     required this.familyService,
     required this.studentService,
+    required this.settingsService,
     this.existing,
   });
 
   final FamilyService familyService;
   final StudentService studentService;
+  final SettingsService settingsService;
   final Family? existing;
 
   @override
@@ -152,6 +155,7 @@ class _FamilyFormScreenState extends State<FamilyFormScreen> {
                 builder: (_) => FamilyDetailsScreen(
                   familyService: service,
                   studentService: widget.studentService,
+                  settingsService: widget.settingsService,
                   familyId: decision.family.id,
                 ),
               ),

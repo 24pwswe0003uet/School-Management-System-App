@@ -42,8 +42,15 @@ class _FeeStructuresScreenState extends State<FeeStructuresScreen> {
         _structures = structures;
         _loading = false;
       });
-    } catch (_) {
+    } on ArgumentError catch (e) {
       if (!mounted) return;
+      setState(() {
+        _error = 'Invalid data: ${e.message}';
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('Fee load error: $e');
       setState(() {
         _error = 'Fee rules could not be loaded.';
         _loading = false;
@@ -273,6 +280,7 @@ class _StructureFormDialogState extends State<_StructureFormDialog> {
   late final TextEditingController _discount;
   late final TextEditingController _description;
   String? _className;
+  FeeType _feeType = FeeType.monthly;
   bool _submitting = false;
   String? _error;
 
@@ -333,6 +341,7 @@ class _StructureFormDialogState extends State<_StructureFormDialog> {
           monthlyAmount: amount,
           discountAmount: discount,
           description: _description.text,
+          feeType: _feeType,
         );
       } else {
         await widget.feeService.repository.updateFeeStructure(
@@ -342,6 +351,7 @@ class _StructureFormDialogState extends State<_StructureFormDialog> {
           monthlyAmount: amount,
           discountAmount: discount,
           description: _description.text,
+          feeType: _feeType,
         );
       }
       if (!mounted) return;
@@ -381,7 +391,6 @@ class _StructureFormDialogState extends State<_StructureFormDialog> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String?>(
-              key: const Key('structure_class_field'),
               initialValue: _className,
               decoration: const InputDecoration(
                 labelText: 'Applies to class',
@@ -397,6 +406,38 @@ class _StructureFormDialogState extends State<_StructureFormDialog> {
                   DropdownMenuItem<String?>(value: c, child: Text(c)),
               ],
               onChanged: (value) => setState(() => _className = value),
+            ),
+            const SizedBox(height: 12),
+            // Fee Type selector
+            Row(
+              children: [
+                Row(
+                  children: [
+                    Radio<FeeType>(
+                      value: FeeType.admission,
+                      groupValue: _feeType,
+                      onChanged: (FeeType? value) {
+                        setState(() => _feeType = value!);
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    const Text('Admission (one-time)'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Radio<FeeType>(
+                      value: FeeType.monthly,
+                      groupValue: _feeType,
+                      onChanged: (FeeType? value) {
+                        setState(() => _feeType = value!);
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    const Text('Monthly (recurring)'),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             TextField(
@@ -476,6 +517,7 @@ FeeStructure _structureWithActive(FeeStructure structure, bool isActive) {
     className: structure.className,
     monthlyAmount: structure.monthlyAmount,
     discountAmount: structure.discountAmount,
+    feeType: structure.feeType,
     description: structure.description,
     isActive: isActive,
   );

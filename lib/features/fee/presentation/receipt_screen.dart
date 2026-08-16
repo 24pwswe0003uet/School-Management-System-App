@@ -2,21 +2,33 @@ import 'package:flutter/material.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../shared/utils/formatters.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../application/receipt_printer.dart';
 import '../domain/entities/receipt_data.dart';
 
 /// On-screen view of a fee receipt with a "Save PDF" action that routes
-/// through [ReceiptPrinter] (injectable for widget tests).
+/// through [ReceiptPrinter] (injectable for widget tests). When a
+/// [settingsService] is supplied the header is branded with the configured
+/// school profile (name, address, phone, logo) instead of the generic app
+/// name.
 class ReceiptScreen extends StatelessWidget {
-  ReceiptScreen({super.key, required this.receipt, ReceiptPrinter? printer})
-      : printer = printer ?? ReceiptPrinter();
+  ReceiptScreen({
+    super.key,
+    required this.receipt,
+    this.settingsService,
+    ReceiptPrinter? printer,
+  }) : printer = printer ?? ReceiptPrinter();
 
   final ReceiptData receipt;
+  final SettingsService? settingsService;
   final ReceiptPrinter printer;
 
   Future<void> _save(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
-    final saved = await printer.saveReceiptPdf(receipt);
+    final saved = await printer.saveReceiptPdf(
+      receipt,
+      profile: settingsService?.profile,
+    );
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -34,6 +46,13 @@ class ReceiptScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final r = receipt;
+    final profile = settingsService?.profile;
+    final schoolName = (profile?.schoolName ?? '').trim().isEmpty
+        ? AppConfig.appName
+        : profile!.schoolName.trim();
+    final address = profile?.address.trim() ?? '';
+    final phone = profile?.phone.trim() ?? '';
+    final footer = profile?.receiptFooter.trim() ?? '';
     return Scaffold(
       appBar: AppBar(title: const Text('Fee Receipt')),
       body: ListView(
@@ -63,14 +82,48 @@ class ReceiptScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (settingsService != null &&
+                      settingsService!.profile.hasLogo)
+                    Center(
+                      child: SizedBox(
+                        width: 64,
+                        height: 64,
+                        child: FutureBuilder(
+                          future: settingsService!.getLogoBytes(),
+                          builder: (context, snapshot) {
+                            final bytes = snapshot.data;
+                            if (bytes == null) {
+                              return const SizedBox.shrink();
+                            }
+                            return Image.memory(bytes, fit: BoxFit.contain);
+                          },
+                        ),
+                      ),
+                    ),
                   Text(
-                    AppConfig.appName,
+                    schoolName,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  if (address.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      address,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                  if (phone.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      phone,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                  const SizedBox(height: 8),
                   Text(
                     'FEE RECEIPT',
                     textAlign: TextAlign.center,
@@ -113,6 +166,14 @@ class ReceiptScreen extends StatelessWidget {
                     _row(context, 'Note', r.paymentNote!),
                   if (r.createdByName != null && r.createdByName!.isNotEmpty)
                     _row(context, 'Received by', r.createdByName!),
+                  if (footer.isNotEmpty) ...[
+                    const Divider(height: 24),
+                    Text(
+                      footer,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
                 ],
               ),
             ),

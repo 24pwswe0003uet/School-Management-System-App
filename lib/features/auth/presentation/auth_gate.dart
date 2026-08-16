@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
 
 import '../../dashboard/dashboard_screen.dart';
 import '../../dashboard/domain/services/dashboard_service.dart';
@@ -6,7 +7,9 @@ import '../../employee/domain/services/employee_service.dart';
 import '../../family/domain/services/family_service.dart';
 import '../../fee/application/fee_service.dart';
 import '../../import/application/import_service.dart';
+import '../../expense/domain/services/expense_service.dart';
 import '../../salary/domain/services/salary_service.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../../student/domain/services/student_service.dart';
 import '../domain/services/auth_service.dart';
 import 'login_screen.dart';
@@ -31,6 +34,10 @@ class AuthGate extends StatelessWidget {
     required this.importService,
     required this.employeeService,
     required this.salaryService,
+    required this.expenseService,
+    required this.reportRepository,
+    required this.settingsService,
+    this.onOpenBackup,
   });
 
   final AuthService authService;
@@ -41,6 +48,10 @@ class AuthGate extends StatelessWidget {
   final ImportService importService;
   final EmployeeService employeeService;
   final SalaryService salaryService;
+  final ExpenseService expenseService;
+  final ReportRepository reportRepository;
+  final SettingsService settingsService;
+  final void Function()? onOpenBackup;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +68,10 @@ class AuthGate extends StatelessWidget {
             importService: importService,
             employeeService: employeeService,
             salaryService: salaryService,
+            expenseService: expenseService,
+            reportRepository: reportRepository,
+            settingsService: settingsService,
+            onOpenBackup: onOpenBackup,
           );
         }
         if (authService.setupRequired) {

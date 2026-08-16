@@ -15,9 +15,13 @@ import '../import/application/import_service.dart';
 import '../import/presentation/import_screen.dart';
 import '../salary/domain/services/salary_service.dart';
 import '../salary/presentation/salary_screen.dart';
+import '../settings/domain/services/settings_service.dart';
 import '../student/domain/services/student_service.dart';
 import '../student/presentation/student_form_screen.dart';
+import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
 import '../student/presentation/student_list_screen.dart';
+import '../expense/domain/services/expense_service.dart';
+import '../expense/presentation/expense_screen.dart';
 import 'domain/entities/dashboard_summary.dart';
 import 'domain/services/dashboard_service.dart';
 import 'presentation/widgets/empty_state_panel.dart';
@@ -38,6 +42,10 @@ class DashboardScreen extends StatefulWidget {
     required this.importService,
     required this.employeeService,
     required this.salaryService,
+    required this.expenseService,
+    required this.reportRepository,
+    required this.settingsService,
+    this.onOpenBackup,
   });
 
   final AuthService authService;
@@ -48,6 +56,10 @@ class DashboardScreen extends StatefulWidget {
   final ImportService importService;
   final EmployeeService employeeService;
   final SalaryService salaryService;
+  final ExpenseService expenseService;
+  final ReportRepository reportRepository;
+  final SettingsService settingsService;
+  final void Function()? onOpenBackup;
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -66,6 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (_) => FamilyListScreen(
           familyService: widget.familyService,
           studentService: widget.studentService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -78,6 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (_) => FamilyFormScreen(
           familyService: widget.familyService,
           studentService: widget.studentService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -90,6 +104,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (_) => StudentListScreen(
           studentService: widget.studentService,
           familyService: widget.familyService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -102,6 +117,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (_) => StudentFormScreen(
           studentService: widget.studentService,
           familyService: widget.familyService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -114,6 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (_) => AdmissionWizardScreen(
           studentService: widget.studentService,
           familyService: widget.familyService,
+          settingsService: widget.settingsService,
         ),
       ),
     );
@@ -136,7 +153,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _openFee() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => FeeScreen(feeService: widget.feeService),
+        builder: (_) => FeeScreen(
+          feeService: widget.feeService,
+          settingsService: widget.settingsService,
+        ),
       ),
     );
     widget.dashboardService.load();
@@ -163,6 +183,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     widget.dashboardService.load();
   }
 
+  Future<void> _openExpense() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ExpenseScreen(expenseService: widget.expenseService),
+      ),
+    );
+    widget.dashboardService.load();
+  }
+
+  Future<void> _openReports() async {
+    Navigator.pushNamed(context, '/reports/hub');
+    widget.dashboardService.load();
+  }
+
   Future<void> _exportStudents() async {
     final messenger = ScaffoldMessenger.of(context);
     final saved = await widget.importService.exportStudents();
@@ -184,8 +218,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppConfig.appName),
+        title: ListenableBuilder(
+          listenable: widget.settingsService,
+          builder: (context, _) {
+            final schoolName = widget.settingsService.profile.schoolName;
+            return Text(
+              schoolName.isEmpty ? AppConfig.appName : schoolName,
+              key: const Key('dashboard_title'),
+            );
+          },
+        ),
         actions: [
+          IconButton(
+            key: const Key('settings_button'),
+            tooltip: 'School settings',
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/settings'),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: TextButton.icon(
@@ -222,6 +271,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onCollectFee: _openFee,
             onOpenEmployees: _openEmployees,
             onOpenSalary: _openSalary,
+            onOpenExpense: _openExpense,
+            onOpenReports: _openReports,
+            onOpenBackup: widget.onOpenBackup ??
+                () => Navigator.pushNamed(context, '/backup'),
           );
         },
       ),
@@ -244,6 +297,9 @@ class _DashboardBody extends StatelessWidget {
     required this.onCollectFee,
     required this.onOpenEmployees,
     required this.onOpenSalary,
+    required this.onOpenExpense,
+    required this.onOpenReports,
+    required this.onOpenBackup,
   });
 
   final String greeting;
@@ -259,6 +315,9 @@ class _DashboardBody extends StatelessWidget {
   final VoidCallback onCollectFee;
   final VoidCallback onOpenEmployees;
   final VoidCallback onOpenSalary;
+  final VoidCallback onOpenExpense;
+  final VoidCallback onOpenReports;
+  final VoidCallback onOpenBackup;
 
   @override
   Widget build(BuildContext context) {
@@ -372,10 +431,11 @@ class _DashboardBody extends StatelessWidget {
                 icon: Icons.payments_rounded,
                 onTap: onCollectFee,
               ),
-              const QuickActionButton(
-                key: Key('quick_add_expense'),
+              QuickActionButton(
+                key: const Key('quick_add_expense'),
                 label: 'Add Expense',
                 icon: Icons.add_card_rounded,
+                onTap: onOpenExpense,
               ),
               QuickActionButton(
                 key: const Key('quick_add_staff'),
@@ -388,6 +448,18 @@ class _DashboardBody extends StatelessWidget {
                 label: 'Salaries',
                 icon: Icons.payments_rounded,
                 onTap: onOpenSalary,
+              ),
+              QuickActionButton(
+                key: const Key('quick_reports'),
+                label: 'Reports',
+                icon: Icons.insert_chart_rounded,
+                onTap: onOpenReports,
+              ),
+              QuickActionButton(
+                key: const Key('quick_backup_restore'),
+                label: 'Backup & Restore',
+                icon: Icons.save_rounded,
+                onTap: onOpenBackup,
               ),
               QuickActionButton(
                 key: const Key('quick_search_student'),

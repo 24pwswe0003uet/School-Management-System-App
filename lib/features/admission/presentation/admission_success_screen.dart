@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/utils/formatters.dart';
 import '../../family/domain/entities/family.dart';
 import '../../family/domain/services/family_service.dart';
+import '../../settings/domain/services/settings_service.dart';
 import '../../student/domain/entities/student.dart';
 import '../../student/domain/services/student_service.dart';
 import '../../student/presentation/student_details_screen.dart';
@@ -16,6 +17,7 @@ class AdmissionSuccessScreen extends StatelessWidget {
     super.key,
     required this.studentService,
     required this.familyService,
+    required this.settingsService,
     required this.student,
     required this.family,
     required this.admissionNumber,
@@ -24,6 +26,7 @@ class AdmissionSuccessScreen extends StatelessWidget {
 
   final StudentService studentService;
   final FamilyService familyService;
+  final SettingsService settingsService;
   final Student student;
   final Family family;
   final String admissionNumber;
@@ -35,6 +38,7 @@ class AdmissionSuccessScreen extends StatelessWidget {
         builder: (_) => StudentDetailsScreen(
           studentService: studentService,
           familyService: familyService,
+          settingsService: settingsService,
           studentId: student.id,
         ),
       ),
@@ -47,6 +51,7 @@ class AdmissionSuccessScreen extends StatelessWidget {
         builder: (_) => AdmissionWizardScreen(
           studentService: studentService,
           familyService: familyService,
+          settingsService: settingsService,
         ),
       ),
     );

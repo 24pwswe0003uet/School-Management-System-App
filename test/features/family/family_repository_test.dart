@@ -33,7 +33,7 @@ void main() {
     required int familyId,
     String id = 'STU-000001',
     String name = 'Ali Khan',
-    String className = 'Class 5',
+    String className = '5',
     String section = 'A',
     String status = 'active',
   }) async {
@@ -272,7 +272,7 @@ void main() {
         familyId: family.id,
         name: 'Fatima',
         id: 'STU-000003',
-        className: 'Class 7',
+        className: '7',
         status: 'transferred',
       );
 
@@ -284,7 +284,7 @@ void main() {
         'Usman',
       ]);
       expect(details.students[1].status, 'transferred');
-      expect(details.students[1].className, 'Class 7');
+      expect(details.students[1].className, '7');
     });
 
     test('prevents orphan students (foreign key)', () async {
