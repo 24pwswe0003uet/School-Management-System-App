@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../../core/config/app_config.dart';
+import '../../shared/theme/app_breakpoints.dart';
+import '../../shared/theme/app_theme.dart';
 import '../../shared/utils/formatters.dart';
+import '../../shared/widgets/app_error_state.dart';
+import '../../shared/widgets/app_page_header.dart';
+import '../../shared/widgets/app_shell.dart';
+import '../../shared/widgets/app_stat_card.dart';
 import '../admission/presentation/admission_wizard_screen.dart';
 import '../auth/domain/services/auth_service.dart';
+import '../backup/presentation/backup_screen.dart';
 import '../employee/domain/services/employee_service.dart';
 import '../employee/presentation/employee_list_screen.dart';
+import '../expense/domain/services/expense_service.dart';
+import '../expense/presentation/expense_screen.dart';
 import '../family/domain/services/family_service.dart';
 import '../family/presentation/family_form_screen.dart';
 import '../family/presentation/family_list_screen.dart';
@@ -13,24 +22,22 @@ import '../fee/application/fee_service.dart';
 import '../fee/presentation/fee_screen.dart';
 import '../import/application/import_service.dart';
 import '../import/presentation/import_screen.dart';
+import '../reports/domain/repositories/report_repository.dart';
+import '../reports/presentation/reports_hub_screen.dart';
 import '../salary/domain/services/salary_service.dart';
 import '../salary/presentation/salary_screen.dart';
 import '../settings/domain/services/settings_service.dart';
+import '../settings/presentation/settings_screen.dart';
 import '../student/domain/services/student_service.dart';
 import '../student/presentation/student_form_screen.dart';
-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
 import '../student/presentation/student_list_screen.dart';
-import '../expense/domain/services/expense_service.dart';
-import '../expense/presentation/expense_screen.dart';
 import 'domain/entities/dashboard_summary.dart';
 import 'domain/services/dashboard_service.dart';
 import 'presentation/widgets/empty_state_panel.dart';
 import 'presentation/widgets/quick_action_button.dart';
 import 'presentation/widgets/recent_activity_panel.dart';
-import 'presentation/widgets/stat_card.dart';
 
-/// Module 2: the school dashboard. Every figure is computed from SQLite by
-/// [DashboardService]; the UI only formats and displays the summary.
+/// Modern Dashboard Screen wrapped seamlessly in persistent AppShell navigation.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
@@ -66,11 +73,28 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  int _currentNavIndex = 0;
+
   @override
   void initState() {
     super.initState();
     widget.dashboardService.load();
   }
+
+  static const List<AppNavDestination> _navDestinations = [
+    AppNavDestination(label: 'Dashboard', icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard),
+    AppNavDestination(label: 'Students', icon: Icons.school_outlined, selectedIcon: Icons.school),
+    AppNavDestination(label: 'Families', icon: Icons.family_restroom_outlined, selectedIcon: Icons.family_restroom),
+    AppNavDestination(label: 'New Admission', icon: Icons.how_to_reg_outlined, selectedIcon: Icons.how_to_reg),
+    AppNavDestination(label: 'Fees', icon: Icons.payments_outlined, selectedIcon: Icons.payments),
+    AppNavDestination(label: 'Staff', icon: Icons.badge_outlined, selectedIcon: Icons.badge),
+    AppNavDestination(label: 'Salaries', icon: Icons.attach_money_outlined, selectedIcon: Icons.attach_money),
+    AppNavDestination(label: 'Expenses', icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long),
+    AppNavDestination(label: 'Reports', icon: Icons.analytics_outlined, selectedIcon: Icons.analytics),
+    AppNavDestination(label: 'Import / Export', icon: Icons.import_export_outlined, selectedIcon: Icons.import_export),
+    AppNavDestination(label: 'Backup & Restore', icon: Icons.backup_outlined, selectedIcon: Icons.backup),
+    AppNavDestination(label: 'Settings', icon: Icons.settings_outlined, selectedIcon: Icons.settings),
+  ];
 
   Future<void> _openFamilies() async {
     await Navigator.of(context).push(
@@ -212,72 +236,132 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _onNavSelected(int index) {
+    setState(() => _currentNavIndex = index);
+  }
+
+  Widget _buildBodyForIndex(int index) {
+    switch (index) {
+      case 0:
+        return _buildDashboardContent();
+      case 1:
+        return StudentListScreen(
+          studentService: widget.studentService,
+          familyService: widget.familyService,
+          settingsService: widget.settingsService,
+        );
+      case 2:
+        return FamilyListScreen(
+          familyService: widget.familyService,
+          studentService: widget.studentService,
+          settingsService: widget.settingsService,
+        );
+      case 3:
+        return AdmissionWizardScreen(
+          studentService: widget.studentService,
+          familyService: widget.familyService,
+          settingsService: widget.settingsService,
+        );
+      case 4:
+        return FeeScreen(
+          feeService: widget.feeService,
+          settingsService: widget.settingsService,
+        );
+      case 5:
+        return EmployeeListScreen(
+          employeeService: widget.employeeService,
+          salaryService: widget.salaryService,
+        );
+      case 6:
+        return SalaryScreen(salaryService: widget.salaryService);
+      case 7:
+        return ExpenseScreen(expenseService: widget.expenseService);
+      case 8:
+        return ReportsHubScreen(reportRepository: widget.reportRepository);
+      case 9:
+        return ImportScreen(
+          service: widget.importService,
+          onFinished: widget.dashboardService.load,
+        );
+      case 10:
+        if (widget.onOpenBackup != null) {
+          widget.onOpenBackup!();
+          return const SizedBox.shrink();
+        }
+        return const Center(child: Text('Backup opened'));
+      case 11:
+        return SettingsScreen(
+          settingsService: widget.settingsService,
+          feeService: widget.feeService,
+        );
+      default:
+        return _buildDashboardContent();
+    }
+  }
+
+  Widget _buildDashboardContent() {
+    return ListenableBuilder(
+      listenable: widget.dashboardService,
+      builder: (context, _) {
+        final service = widget.dashboardService;
+        if (service.isLoading && service.summary == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (service.error != null && service.summary == null) {
+          return Center(
+            child: AppErrorState(
+              title: 'Dashboard could not be loaded',
+              message: service.error ?? 'Please check connection and retry.',
+              onRetry: service.load,
+            ),
+          );
+        }
+        final summary = service.summary ?? DashboardSummary.empty;
+        final user = widget.authService.currentUser;
+
+        return _DashboardBody(
+          greeting: user?.displayName ?? '',
+          roleLabel: user?.role.label ?? '',
+          summary: summary,
+          onOpenFamilies: _openFamilies,
+          onAddFamily: _addFamily,
+          onOpenStudents: _openStudents,
+          onAddStudent: _addStudent,
+          onNewAdmission: _openNewAdmission,
+          onImportExcel: _openImport,
+          onExportExcel: _exportStudents,
+          onCollectFee: _openFee,
+          onOpenEmployees: _openEmployees,
+          onOpenSalary: _openSalary,
+          onOpenExpense: _openExpense,
+          onOpenReports: _openReports,
+          onOpenBackup: widget.onOpenBackup ??
+              () => Navigator.pushNamed(context, '/backup'),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = widget.authService.currentUser;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: ListenableBuilder(
-          listenable: widget.settingsService,
-          builder: (context, _) {
-            final schoolName = widget.settingsService.profile.schoolName;
-            return Text(
-              schoolName.isEmpty ? AppConfig.appName : schoolName,
-              key: const Key('dashboard_title'),
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            key: const Key('settings_button'),
-            tooltip: 'School settings',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.pushNamed(context, '/settings'),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: TextButton.icon(
-              key: const Key('logout_button'),
-              onPressed: widget.authService.logout,
-              icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
-            ),
-          ),
-        ],
-      ),
-      body: ListenableBuilder(
-        listenable: widget.dashboardService,
-        builder: (context, _) {
-          final service = widget.dashboardService;
-          if (service.isLoading && service.summary == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (service.error != null && service.summary == null) {
-            return _ErrorPanel(onRetry: service.load);
-          }
-          final summary = service.summary ?? DashboardSummary.empty;
-          return _DashboardBody(
-            greeting: user?.displayName ?? '',
-            roleLabel: user?.role.label ?? '',
-            summary: summary,
-            onOpenFamilies: _openFamilies,
-            onAddFamily: _addFamily,
-            onOpenStudents: _openStudents,
-            onAddStudent: _addStudent,
-            onNewAdmission: _openNewAdmission,
-            onImportExcel: _openImport,
-            onExportExcel: _exportStudents,
-            onCollectFee: _openFee,
-            onOpenEmployees: _openEmployees,
-            onOpenSalary: _openSalary,
-            onOpenExpense: _openExpense,
-            onOpenReports: _openReports,
-            onOpenBackup: widget.onOpenBackup ??
-                () => Navigator.pushNamed(context, '/backup'),
-          );
-        },
-      ),
+    return ListenableBuilder(
+      listenable: widget.settingsService,
+      builder: (context, _) {
+        final schoolName = widget.settingsService.profile.schoolName;
+
+        return AppShell(
+          selectedIndex: _currentNavIndex,
+          onDestinationSelected: _onNavSelected,
+          destinations: _navDestinations,
+          schoolName: schoolName.isEmpty ? AppConfig.appName : schoolName,
+          userName: user?.displayName ?? user?.username ?? 'Admin',
+          userRole: user?.role.label ?? 'Administrator',
+          onLogout: widget.authService.logout,
+          body: _buildBodyForIndex(_currentNavIndex),
+        );
+      },
     );
   }
 }
@@ -322,86 +406,134 @@ class _DashboardBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDesktop = AppBreakpoints.isDesktop(context);
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isDesktop ? 24 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildGreeting(theme),
-          const SizedBox(height: 20),
+          AppPageHeader(
+            title: 'Welcome, $greeting',
+            subtitle: '$roleLabel — ${Formatters.dateWithWeekday(summary.asOf)}',
+            actions: [
+              FilledButton.icon(
+                key: const Key('quick_collect_fee_header'),
+                onPressed: onCollectFee,
+                icon: const Icon(Icons.payments_rounded, size: 18),
+                label: const Text('Collect Fee'),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                key: const Key('quick_new_admission_header'),
+                onPressed: onNewAdmission,
+                icon: const Icon(Icons.person_add_rounded, size: 18),
+                label: const Text('New Admission'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           if (summary.isEmpty) ...[
             const EmptyStatePanel(),
             const SizedBox(height: 24),
           ],
-          _SectionHeader(title: 'Overview'),
+          const _SectionHeader(title: 'Overview & Key Metrics'),
           const SizedBox(height: 12),
+          // Responsive Stat Cards Grid
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
-              StatCard(
-                label: 'Active Students',
-                value: '${summary.activeStudents}',
-                icon: Icons.school_rounded,
-                color: Colors.blue,
-                onTap: onOpenStudents,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'Active Students',
+                  value: '${summary.activeStudents}',
+                  icon: Icons.school_rounded,
+                  color: AppTheme.primaryNavy,
+                  onTap: onOpenStudents,
+                ),
               ),
-              StatCard(
-                label: 'Families',
-                value: '${summary.families}',
-                icon: Icons.family_restroom,
-                color: Colors.teal,
-                onTap: onOpenFamilies,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'Families',
+                  value: '${summary.families}',
+                  icon: Icons.family_restroom,
+                  color: Colors.teal,
+                  onTap: onOpenFamilies,
+                ),
               ),
-              StatCard(
-                label: 'Active Staff',
-                value: '${summary.activeEmployees}',
-                icon: Icons.badge_rounded,
-                color: Colors.purple,
-                onTap: onOpenEmployees,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'Active Staff',
+                  value: '${summary.activeEmployees}',
+                  icon: Icons.badge_rounded,
+                  color: Colors.purple,
+                  onTap: onOpenEmployees,
+                ),
               ),
-              StatCard(
-                label: "Today's Collection",
-                value: Formatters.money(summary.todayCollection),
-                icon: Icons.today_rounded,
-                color: Colors.green,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: "Today's Collection",
+                  value: Formatters.money(summary.todayCollection),
+                  icon: Icons.today_rounded,
+                  color: AppTheme.successGreen,
+                ),
               ),
-              StatCard(
-                label: 'This Month Collection',
-                value: Formatters.money(summary.monthCollection),
-                icon: Icons.calendar_month_rounded,
-                color: Colors.green.shade700,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'This Month Fee',
+                  value: Formatters.money(summary.monthCollection),
+                  icon: Icons.calendar_month_rounded,
+                  color: AppTheme.successGreen,
+                ),
               ),
-              StatCard(
-                label: 'Outstanding Fees',
-                value: Formatters.money(summary.outstandingFees),
-                icon: Icons.currency_rupee,
-                color: Colors.orange,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'Outstanding Fees',
+                  value: Formatters.money(summary.outstandingFees),
+                  icon: Icons.priority_high_rounded,
+                  color: AppTheme.dangerRed,
+                ),
               ),
-              StatCard(
-                label: 'This Month Salary',
-                value: Formatters.money(summary.monthSalary),
-                icon: Icons.payments_rounded,
-                color: Colors.indigo,
-                onTap: onOpenSalary,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'Month Salaries',
+                  value: Formatters.money(summary.monthSalary),
+                  icon: Icons.payments_rounded,
+                  color: Colors.indigo,
+                  onTap: onOpenSalary,
+                ),
               ),
-              StatCard(
-                label: 'Pending Salaries',
-                value: Formatters.money(summary.monthPendingSalary),
-                icon: Icons.schedule_rounded,
-                color: Colors.deepOrange,
-                onTap: onOpenSalary,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'Pending Salaries',
+                  value: Formatters.money(summary.monthPendingSalary),
+                  icon: Icons.schedule_rounded,
+                  color: AppTheme.warningAmber,
+                  onTap: onOpenSalary,
+                ),
               ),
-              StatCard(
-                label: 'This Month Expenses',
-                value: Formatters.money(summary.monthExpenses),
-                icon: Icons.receipt_long_rounded,
-                color: Colors.red,
+              SizedBox(
+                width: isDesktop ? 220 : 160,
+                child: AppStatCard(
+                  title: 'Month Expenses',
+                  value: Formatters.money(summary.monthExpenses),
+                  icon: Icons.receipt_long_rounded,
+                  color: AppTheme.dangerRed,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 28),
-          const _SectionHeader(title: 'Quick Actions'),
+          const _SectionHeader(title: 'Quick Operations'),
           const SizedBox(height: 12),
           Wrap(
             spacing: 12,
@@ -482,39 +614,12 @@ class _DashboardBody extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 28),
-          const _SectionHeader(title: 'Recent Activity'),
+          const _SectionHeader(title: 'Recent Activity Logs'),
           const SizedBox(height: 12),
           _buildRecentActivity(theme),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
         ],
       ),
-    );
-  }
-
-  Widget _buildGreeting(ThemeData theme) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome, $greeting',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$roleLabel — ${Formatters.dateWithWeekday(summary.asOf)}',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -523,26 +628,26 @@ class _DashboardBody extends StatelessWidget {
       RecentActivityPanel(
         title: 'Payments',
         icon: Icons.payments_rounded,
-        color: Colors.green,
+        color: AppTheme.successGreen,
         items: summary.recentPayments,
       ),
       RecentActivityPanel(
         title: 'Admissions',
         icon: Icons.how_to_reg_rounded,
-        color: Colors.blue,
+        color: AppTheme.primaryNavy,
         items: summary.recentAdmissions,
       ),
       RecentActivityPanel(
         title: 'Expenses',
         icon: Icons.receipt_long_rounded,
-        color: Colors.red,
+        color: AppTheme.dangerRed,
         items: summary.recentExpenses,
       ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth >= 1100) {
+        if (constraints.maxWidth >= 1024) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -575,58 +680,11 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: Theme.of(
-        context,
-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-    );
-  }
-}
-
-class _ErrorPanel extends StatelessWidget {
-  const _ErrorPanel({required this.onRetry});
-
-  final Future<void> Function() onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: Card(
-          margin: const EdgeInsets.all(24),
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'The dashboard could not be loaded.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Please try again.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 20),
-                FilledButton.icon(
-                  onPressed: onRetry,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF0F172A),
+        letterSpacing: -0.2,
       ),
     );
   }

@@ -401,7 +401,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
+            constraints: const BoxConstraints(maxWidth: 920),
             child: Card(
               margin: EdgeInsets.zero,
               child: Padding(

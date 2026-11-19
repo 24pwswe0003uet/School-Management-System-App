@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../../core/config/app_config.dart';
+import '../../salary/domain/services/salary_service.dart';
+import '../../shared/theme/app_breakpoints.dart';
+import '../../shared/theme/app_theme.dart';
+import '../../shared/utils/formatters.dart';
+import '../../shared/widgets/app_data_table.dart';
+import '../../shared/widgets/app_empty_state.dart';
+import '../../shared/widgets/app_error_state.dart';
+import '../../shared/widgets/app_page_header.dart';
+import '../../shared/widgets/app_status_chip.dart';
 import '../domain/entities/employee.dart';
 import '../domain/entities/employee_category.dart';
 import '../domain/entities/employee_status.dart';
 import '../domain/services/employee_service.dart';
-import '../../salary/domain/services/salary_service.dart';
 import 'employee_details_screen.dart';
 import 'employee_form_screen.dart';
 import 'widgets/employee_card.dart';
 
-/// Employee list + fast search with category/status filters.
+/// Modern Employee list with responsive desktop data table and mobile cards.
 class EmployeeListScreen extends StatefulWidget {
   const EmployeeListScreen({
     super.key,
@@ -25,10 +34,19 @@ class EmployeeListScreen extends StatefulWidget {
 }
 
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    _searchController.text = widget.employeeService.query;
     widget.employeeService.search(widget.employeeService.query);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _openCreate() async {
@@ -58,47 +76,74 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = AppBreakpoints.isDesktop(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Staff Management')),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('employee_add_fab'),
-        onPressed: _openCreate,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Staff'),
-      ),
+      floatingActionButton: isDesktop
+          ? null
+          : FloatingActionButton.extended(
+              key: const Key('employee_add_fab'),
+              onPressed: _openCreate,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Staff'),
+            ),
       body: ListenableBuilder(
         listenable: widget.employeeService,
         builder: (context, _) {
           final service = widget.employeeService;
+
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: TextField(
-                  key: const Key('employee_search_field'),
-                  onChanged: (value) => service.search(value),
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    hintText:
-                        'Search by employee ID, name, designation or phone…',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+              AppPageHeader(
+                title: 'Staff Directory',
+                subtitle: '${service.results.length} faculty and operational employees',
+                actions: [
+                  FilledButton.icon(
+                    key: const Key('employee_add_desktop_btn'),
+                    onPressed: _openCreate,
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Add Staff'),
                   ),
-                ),
+                ],
               ),
+              // Filter Toolbar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
                 child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 12,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     SizedBox(
-                      width: 160,
+                      width: 320,
+                      child: TextField(
+                        key: const Key('employee_search_field'),
+                        controller: _searchController,
+                        onChanged: (value) => service.search(value),
+                        decoration: InputDecoration(
+                          hintText: 'Search by ID, name, designation or phone…',
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          isDense: true,
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 18),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    service.search('');
+                                  },
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 170,
                       child: _FilterDropdown<EmployeeStatus>(
                         key: const Key('employee_status_filter'),
                         label: 'Status',
                         value: service.statusFilter,
-                        items: {
+                        items: const {
                           null: 'All statuses',
                           EmployeeStatus.active: 'Active',
                           EmployeeStatus.inactive: 'Inactive',
@@ -114,8 +159,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                         value: service.categoryFilter,
                         items: {
                           null: 'All categories',
-                          for (final c in EmployeeService.categories)
-                            c: c.label,
+                          for (final c in EmployeeService.categories) c: c.label,
                         },
                         onChanged: service.setCategoryFilter,
                       ),
@@ -123,8 +167,8 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Expanded(child: _buildContent(service)),
+              const SizedBox(height: 12),
+              Expanded(child: _buildBody(context, service, isDesktop)),
             ],
           );
         },
@@ -132,74 +176,102 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
     );
   }
 
-  Widget _buildContent(EmployeeService service) {
-    final theme = Theme.of(context);
+  Widget _buildBody(BuildContext context, EmployeeService service, bool isDesktop) {
     if (service.isLoading && service.results.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
+
     if (service.error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Staff could not be loaded.',
-                style: theme.textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: service.refresh,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+      return AppErrorState(
+        title: 'Could not load staff',
+        message: service.error!,
+        onRetry: service.refresh,
       );
     }
+
     if (service.results.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.groups_outlined,
-                size: 48,
-                color: theme.colorScheme.outline,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'No staff found.',
-                style: theme.textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Try a different search or filter, or use "Add Staff" to '
-                'register someone.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
+      return AppEmptyState(
+        title: 'No staff found',
+        message: 'Try changing your search terms or filters, or add a staff member.',
+        actionLabel: 'Add Staff',
+        onAction: _openCreate,
+      );
+    }
+
+    // Responsive Desktop Data Table
+    if (isDesktop) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: AppDataTable(
+          columns: const [
+            DataColumn(label: Text('STAFF ID')),
+            DataColumn(label: Text('NAME')),
+            DataColumn(label: Text('DESIGNATION')),
+            DataColumn(label: Text('CATEGORY')),
+            DataColumn(label: Text('MONTHLY BASE SALARY')),
+            DataColumn(label: Text('PHONE')),
+            DataColumn(label: Text('STATUS')),
+            DataColumn(label: Text('ACTIONS')),
+          ],
+          rows: service.results.map((e) {
+            return DataRow(
+              cells: [
+                DataCell(
+                  Text(
+                    e.employeeCode,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
-              ),
-            ],
-          ),
+                DataCell(
+                  InkWell(
+                    onTap: () => _openDetails(e),
+                    child: Text(
+                      e.fullName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryNavy,
+                      ),
+                    ),
+                  ),
+                ),
+                DataCell(Text(e.designation)),
+                DataCell(Text(e.category.label)),
+                DataCell(
+                  Text(
+                    Formatters.money(e.baseSalary),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                DataCell(Text(e.primaryPhone)),
+                DataCell(
+                  AppStatusChip(
+                    label: e.status.label,
+                    isSuccess: e.status == EmployeeStatus.active,
+                    isDanger: e.status == EmployeeStatus.inactive,
+                  ),
+                ),
+                DataCell(
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, size: 20),
+                    tooltip: 'View Staff Details',
+                    onPressed: () => _openDetails(e),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
         ),
       );
     }
+
+    // Mobile / Tablet Card View
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
       itemCount: service.results.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
-        final employee = service.results[index];
-        return EmployeeCard(
-          employee: employee,
-          onTap: () => _openDetails(employee),
-        );
+        final item = service.results[index];
+        return EmployeeCard(employee: item, onTap: () => _openDetails(item));
       },
     );
   }
@@ -224,7 +296,6 @@ class _FilterDropdown<T> extends StatelessWidget {
     return InputDecorator(
       decoration: InputDecoration(
         labelText: label,
-        border: const OutlineInputBorder(),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),

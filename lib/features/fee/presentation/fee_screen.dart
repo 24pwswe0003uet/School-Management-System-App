@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../settings/domain/services/settings_service.dart';
+import '../../shared/theme/app_theme.dart';
 import '../application/fee_service.dart';
 import 'collect_payment_screen.dart';
 import 'fee_generate_screen.dart';
@@ -8,163 +9,79 @@ import 'fee_records_screen.dart';
 import 'fee_reports_screen.dart';
 import 'fee_structures_screen.dart';
 
-/// Module 7 hub. Reached from the dashboard "Collect Fee" quick action and
-/// routes to every fee feature.
-class FeeScreen extends StatelessWidget {
+/// Modern Fee Management Hub with intuitive operational tab bars and quick actions.
+class FeeScreen extends StatefulWidget {
   const FeeScreen({
     super.key,
     required this.feeService,
     required this.settingsService,
+    this.initialTabIndex = 0,
   });
 
   final FeeService feeService;
   final SettingsService settingsService;
+  final int initialTabIndex;
 
-  Future<void> _push(BuildContext context, Widget screen) {
-    return Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => screen),
+  @override
+  State<FeeScreen> createState() => _FeeScreenState();
+}
+
+class _FeeScreenState extends State<FeeScreen> with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: 5,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
     );
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Fee Management')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: const Text('Fee Management'),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelColor: AppTheme.primaryNavy,
+          indicatorColor: AppTheme.primaryNavy,
+          tabs: const [
+            Tab(icon: Icon(Icons.payments_outlined), text: 'Collect Payment'),
+            Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Fee Records'),
+            Tab(icon: Icon(Icons.auto_awesome_outlined), text: 'Generate Monthly'),
+            Tab(icon: Icon(Icons.rule_outlined), text: 'Fee Structures'),
+            Tab(icon: Icon(Icons.analytics_outlined), text: 'Fee Reports'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          _FeeMenuTile(
-            key: const Key('fee_menu_collect'),
-            icon: Icons.payments_rounded,
-            color: Colors.green,
-            title: 'Collect Payment',
-            subtitle: 'Search a student and record a payment with a receipt.',
-            onTap: () => _push(
-              context,
-              CollectPaymentScreen(
-                feeService: feeService,
-                settingsService: settingsService,
-              ),
-            ),
+          CollectPaymentScreen(
+            feeService: widget.feeService,
+            settingsService: widget.settingsService,
           ),
-          _FeeMenuTile(
-            key: const Key('fee_menu_records'),
-            icon: Icons.receipt_long_rounded,
-            color: Colors.indigo,
-            title: 'Fee Records',
-            subtitle:
-                'Search and review monthly fee records by student, class, '
-                'month or status.',
-            onTap: () => _push(
-              context,
-              FeeRecordsScreen(
-                feeService: feeService,
-                settingsService: settingsService,
-              ),
-            ),
+          FeeRecordsScreen(
+            feeService: widget.feeService,
+            settingsService: widget.settingsService,
           ),
-          _FeeMenuTile(
-            key: const Key('fee_menu_generate'),
-            icon: Icons.auto_awesome_rounded,
-            color: Colors.teal,
-            title: 'Generate Monthly Fee',
-            subtitle: "Create the month's fee charges for all active students.",
-            onTap: () => _push(
-              context,
-              FeeGenerateScreen(feeService: feeService),
-            ),
-          ),
-          _FeeMenuTile(
-            key: const Key('fee_menu_structures'),
-            icon: Icons.rule_rounded,
-            color: Colors.orange,
-            title: 'Fee Structures',
-            subtitle: 'Monthly fee rules per class and the default rule.',
-            onTap: () => _push(
-              context,
-              FeeStructuresScreen(feeService: feeService),
-            ),
-          ),
-          _FeeMenuTile(
-            key: const Key('fee_menu_reports'),
-            icon: Icons.insert_chart_rounded,
-            color: Colors.purple,
-            title: 'Reports',
-            subtitle:
-                'Collection, unpaid students, outstanding, family balances '
-                'and student history.',
-            onTap: () => _push(
-              context,
-              FeeReportsScreen(
-                feeService: feeService,
-                settingsService: settingsService,
-              ),
-            ),
+          FeeGenerateScreen(feeService: widget.feeService),
+          FeeStructuresScreen(feeService: widget.feeService),
+          FeeReportsScreen(
+            feeService: widget.feeService,
+            settingsService: widget.settingsService,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FeeMenuTile extends StatelessWidget {
-  const _FeeMenuTile({
-    super.key,
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: color.withValues(alpha: 0.12),
-                child: Icon(icon, color: color),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right, color: theme.colorScheme.outline),
-            ],
-          ),
-        ),
       ),
     );
   }

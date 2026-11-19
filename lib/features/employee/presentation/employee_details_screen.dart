@@ -199,8 +199,11 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
     final details = _details!;
     final employee = details.employee;
 
-    return ListView(
-      padding: const EdgeInsets.all(24),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1000),
+        child: ListView(
+          padding: const EdgeInsets.all(24),
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
@@ -305,7 +308,9 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
           ),
         ),
       ],
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildInfoCard(ThemeData theme, EmployeeDetails details) {

@@ -156,8 +156,11 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
     final details = _details!;
     final student = details.student;
 
-    return ListView(
-      padding: const EdgeInsets.all(24),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1000),
+        child: ListView(
+          padding: const EdgeInsets.all(24),
       children: [
         Wrap(
           spacing: 12,
@@ -224,7 +227,9 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
           ],
         ),
       ],
-    );
+    ),
+  ),
+);
   }
 
   Widget _sectionTitle(ThemeData theme, String title) {

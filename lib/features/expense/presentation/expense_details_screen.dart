@@ -45,10 +45,13 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildInfoRow(
               Icons.receipt_long_rounded,
@@ -106,7 +109,9 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value,

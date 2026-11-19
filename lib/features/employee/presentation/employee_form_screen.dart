@@ -324,7 +324,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
+            constraints: const BoxConstraints(maxWidth: 880),
             child: Card(
               margin: EdgeInsets.zero,
               child: Padding(

@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../../core/config/app_config.dart';
 import '../../family/domain/services/family_service.dart';
 import '../../settings/domain/services/settings_service.dart';
+import '../../shared/theme/app_breakpoints.dart';
+import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/app_data_table.dart';
+import '../../shared/widgets/app_empty_state.dart';
+import '../../shared/widgets/app_error_state.dart';
+import '../../shared/widgets/app_page_header.dart';
+import '../../shared/widgets/app_status_chip.dart';
 import '../domain/entities/student.dart';
 import '../domain/services/student_service.dart';
 import 'student_details_screen.dart';
 import 'student_form_screen.dart';
 import 'widgets/student_card.dart';
 
-/// Student list + fast search with class/section/status filters.
+/// Modern Student list + responsive data table with fast search and class/section/status filters.
 class StudentListScreen extends StatefulWidget {
   const StudentListScreen({
     super.key,
@@ -26,10 +34,19 @@ class StudentListScreen extends StatefulWidget {
 }
 
 class _StudentListScreenState extends State<StudentListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    _searchController.text = widget.studentService.query;
     widget.studentService.search(widget.studentService.query);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _openCreate() async {
@@ -61,48 +78,74 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = AppBreakpoints.isDesktop(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Student Management')),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('student_add_fab'),
-        onPressed: _openCreate,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Student'),
-      ),
+      floatingActionButton: isDesktop
+          ? null
+          : FloatingActionButton.extended(
+              key: const Key('student_add_fab'),
+              onPressed: _openCreate,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Student'),
+            ),
       body: ListenableBuilder(
         listenable: widget.studentService,
         builder: (context, _) {
           final service = widget.studentService;
+
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: TextField(
-                  key: const Key('student_search_field'),
-                  onChanged: (value) => service.search(value),
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    hintText:
-                        'Search by Student ID, name, admission no., family, '
-                        'guardian or phone…',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+              AppPageHeader(
+                title: 'Student Directory',
+                subtitle: '${service.results.length} students enrolled and tracked in records',
+                actions: [
+                  FilledButton.icon(
+                    key: const Key('student_add_desktop_btn'),
+                    onPressed: _openCreate,
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Add Student'),
                   ),
-                ),
+                ],
               ),
+              // Filter Toolbar
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
                 child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: 12,
+                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     SizedBox(
-                      width: 170,
+                      width: 320,
+                      child: TextField(
+                        key: const Key('student_search_field'),
+                        controller: _searchController,
+                        onChanged: (value) => service.search(value),
+                        decoration: InputDecoration(
+                          hintText: 'Search by ID, name, admission no, phone…',
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          isDense: true,
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 18),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    service.search('');
+                                  },
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 160,
                       child: _FilterDropdown<String>(
                         key: const Key('student_status_filter'),
                         label: 'Status',
                         value: service.statusFilter?.dbValue,
-                        items: {
+                        items: const {
                           'all': 'All statuses',
                           'active': 'Active',
                           'left': 'Left',
@@ -114,7 +157,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 190,
+                      width: 170,
                       child: _FilterDropdown<String>(
                         key: const Key('student_class_filter'),
                         label: 'Class',
@@ -129,7 +172,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                       ),
                     ),
                     SizedBox(
-                      width: 190,
+                      width: 170,
                       child: _FilterDropdown<String>(
                         key: const Key('student_section_filter'),
                         label: 'Section',
@@ -146,8 +189,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Expanded(child: _buildContent(service)),
+              const SizedBox(height: 12),
+              Expanded(child: _buildBody(context, service, isDesktop)),
             ],
           );
         },
@@ -155,64 +198,94 @@ class _StudentListScreenState extends State<StudentListScreen> {
     );
   }
 
-  Widget _buildContent(StudentService service) {
-    final theme = Theme.of(context);
+  Widget _buildBody(BuildContext context, StudentService service, bool isDesktop) {
     if (service.isLoading && service.results.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
+
     if (service.error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Students could not be loaded.',
-                style: theme.textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: service.refresh,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+      return AppErrorState(
+        title: 'Could not load students',
+        message: service.error!,
+        onRetry: service.refresh,
       );
     }
+
     if (service.results.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.school_rounded,
-                size: 48,
-                color: theme.colorScheme.outline,
-              ),
-              const SizedBox(height: 12),
-              Text('No students found.', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 4),
-              Text(
-                'Try a different search, or use "Add Student" to register one.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
+      return AppEmptyState(
+        title: 'No students found',
+        message: 'Try changing your search terms or filters, or add a new student.',
+        actionLabel: 'Add Student',
+        onAction: _openCreate,
+      );
+    }
+
+    // Responsive Desktop Data Table
+    if (isDesktop) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: AppDataTable(
+          columns: const [
+            DataColumn(label: Text('ADMISSION NO.')),
+            DataColumn(label: Text('STUDENT NAME')),
+            DataColumn(label: Text('CLASS & SECTION')),
+            DataColumn(label: Text('GUARDIAN')),
+            DataColumn(label: Text('PHONE')),
+            DataColumn(label: Text('STATUS')),
+            DataColumn(label: Text('ACTIONS')),
+          ],
+          rows: service.results.map((item) {
+            final st = item.student;
+            return DataRow(
+              cells: [
+                DataCell(
+                  Text(
+                    st.admissionNumber,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
-              ),
-            ],
-          ),
+                DataCell(
+                  InkWell(
+                    onTap: () => _openDetails(st),
+                    child: Text(
+                      st.fullName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryNavy,
+                      ),
+                    ),
+                  ),
+                ),
+                DataCell(Text('${st.className} ${st.sectionName}'.trim())),
+                DataCell(Text(item.guardianName ?? '—')),
+                DataCell(Text(item.guardianPhone ?? '—')),
+                DataCell(
+                  AppStatusChip(
+                    label: st.status.label,
+                    isSuccess: st.status == StudentStatus.active,
+                    isWarning: st.status == StudentStatus.transferred,
+                    isDanger: st.status == StudentStatus.left,
+                  ),
+                ),
+                DataCell(
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, size: 20),
+                    tooltip: 'View Profile',
+                    onPressed: () => _openDetails(st),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
         ),
       );
     }
+
+    // Mobile / Tablet Card View
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
       itemCount: service.results.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = service.results[index];
         return StudentCard(item: item, onTap: () => _openDetails(item.student));
@@ -240,7 +313,6 @@ class _FilterDropdown<T> extends StatelessWidget {
     return InputDecorator(
       decoration: InputDecoration(
         labelText: label,
-        border: const OutlineInputBorder(),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),

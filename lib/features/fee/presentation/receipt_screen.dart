@@ -55,8 +55,11 @@ class ReceiptScreen extends StatelessWidget {
     final footer = profile?.receiptFooter.trim() ?? '';
     return Scaffold(
       appBar: AppBar(title: const Text('Fee Receipt')),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: ListView(
+            padding: const EdgeInsets.all(24),
         children: [
           if (r.isReversed)
             Container(
@@ -195,7 +198,9 @@ class ReceiptScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _row(BuildContext context, String label, String value,

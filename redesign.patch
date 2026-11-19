@@ -1,0 +1,5075 @@
+From 037b023d7beefb82d565bc634b0beab41c96daee Mon Sep 17 00:00:00 2001
+From: School Office Redesign <redesign@schooloffice.local>
+Date: Thu, 19 Nov 2026 19:00:14 +0000
+Subject: [PATCH 1/3] feat(ui): implement modern design system, responsive app
+ shell, unified reports, and desktop data tables
+
+---
+ .../presentation/admission_wizard_screen.dart |   2 +-
+ lib/features/dashboard/dashboard_screen.dart  | 474 ++++++++++--------
+ .../presentation/employee_form_screen.dart    |   2 +-
+ .../presentation/employee_list_screen.dart    | 239 +++++----
+ .../presentation/expense_form_screen.dart     |   2 +-
+ .../expense/presentation/expense_screen.dart  | 150 ++----
+ .../presentation/family_form_screen.dart      |   2 +-
+ .../presentation/family_list_screen.dart      | 199 +++++---
+ lib/features/fee/presentation/fee_screen.dart | 191 ++-----
+ .../admission_reports_screen.dart             | 121 +----
+ .../presentation/employee_reports_screen.dart | 121 +----
+ .../presentation/expense_reports_screen.dart  | 123 +----
+ .../presentation/fee_reports_screen.dart      | 123 +----
+ .../financial_reports_screen.dart             | 121 +----
+ .../presentation/salary_reports_screen.dart   | 121 +----
+ .../presentation/student_reports_screen.dart  | 150 +-----
+ .../unified_report_category_screen.dart       | 175 +++++++
+ .../salary/presentation/salary_screen.dart    | 140 ++----
+ .../presentation/student_form_screen.dart     |   2 +-
+ .../presentation/student_list_screen.dart     | 222 +++++---
+ lib/shared/theme/app_breakpoints.dart         |  18 +
+ lib/shared/theme/app_theme.dart               | 266 +++++++++-
+ lib/shared/widgets/app_confirm_dialog.dart    |  74 +++
+ lib/shared/widgets/app_data_table.dart        | 101 ++++
+ lib/shared/widgets/app_date_field.dart        |  60 +++
+ lib/shared/widgets/app_empty_state.dart       |  71 +++
+ lib/shared/widgets/app_error_state.dart       |  65 +++
+ lib/shared/widgets/app_form_section.dart      |  50 ++
+ lib/shared/widgets/app_money_field.dart       |  46 ++
+ lib/shared/widgets/app_page_header.dart       |  94 ++++
+ lib/shared/widgets/app_shell.dart             | 305 +++++++++++
+ lib/shared/widgets/app_stat_card.dart         |  92 ++++
+ lib/shared/widgets/app_status_chip.dart       |  72 +++
+ 33 files changed, 2376 insertions(+), 1618 deletions(-)
+ create mode 100644 lib/features/reports/presentation/unified_report_category_screen.dart
+ create mode 100644 lib/shared/theme/app_breakpoints.dart
+ create mode 100644 lib/shared/widgets/app_confirm_dialog.dart
+ create mode 100644 lib/shared/widgets/app_data_table.dart
+ create mode 100644 lib/shared/widgets/app_date_field.dart
+ create mode 100644 lib/shared/widgets/app_empty_state.dart
+ create mode 100644 lib/shared/widgets/app_error_state.dart
+ create mode 100644 lib/shared/widgets/app_form_section.dart
+ create mode 100644 lib/shared/widgets/app_money_field.dart
+ create mode 100644 lib/shared/widgets/app_page_header.dart
+ create mode 100644 lib/shared/widgets/app_shell.dart
+ create mode 100644 lib/shared/widgets/app_stat_card.dart
+ create mode 100644 lib/shared/widgets/app_status_chip.dart
+
+diff --git a/lib/features/admission/presentation/admission_wizard_screen.dart b/lib/features/admission/presentation/admission_wizard_screen.dart
+index dd53244..49f18b3 100644
+--- a/lib/features/admission/presentation/admission_wizard_screen.dart
++++ b/lib/features/admission/presentation/admission_wizard_screen.dart
+@@ -378,7 +378,7 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
+         child: SingleChildScrollView(
+           padding: const EdgeInsets.all(24),
+           child: ConstrainedBox(
+-            constraints: const BoxConstraints(maxWidth: 760),
++            constraints: const BoxConstraints(maxWidth: 960),
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.stretch,
+               children: [
+diff --git a/lib/features/dashboard/dashboard_screen.dart b/lib/features/dashboard/dashboard_screen.dart
+index 2d38c1a..296eac2 100644
+--- a/lib/features/dashboard/dashboard_screen.dart
++++ b/lib/features/dashboard/dashboard_screen.dart
+@@ -1,11 +1,20 @@
+ import 'package:flutter/material.dart';
+ 
+ import '../../core/config/app_config.dart';
++import '../../shared/theme/app_breakpoints.dart';
++import '../../shared/theme/app_theme.dart';
+ import '../../shared/utils/formatters.dart';
++import '../../shared/widgets/app_error_state.dart';
++import '../../shared/widgets/app_page_header.dart';
++import '../../shared/widgets/app_shell.dart';
++import '../../shared/widgets/app_stat_card.dart';
+ import '../admission/presentation/admission_wizard_screen.dart';
+ import '../auth/domain/services/auth_service.dart';
++import '../backup/presentation/backup_screen.dart';
+ import '../employee/domain/services/employee_service.dart';
+ import '../employee/presentation/employee_list_screen.dart';
++import '../expense/domain/services/expense_service.dart';
++import '../expense/presentation/expense_screen.dart';
+ import '../family/domain/services/family_service.dart';
+ import '../family/presentation/family_form_screen.dart';
+ import '../family/presentation/family_list_screen.dart';
+@@ -13,24 +22,22 @@ import '../fee/application/fee_service.dart';
+ import '../fee/presentation/fee_screen.dart';
+ import '../import/application/import_service.dart';
+ import '../import/presentation/import_screen.dart';
++import '../reports/domain/repositories/report_repository.dart';
++import '../reports/presentation/reports_hub_screen.dart';
+ import '../salary/domain/services/salary_service.dart';
+ import '../salary/presentation/salary_screen.dart';
+ import '../settings/domain/services/settings_service.dart';
++import '../settings/presentation/settings_screen.dart';
+ import '../student/domain/services/student_service.dart';
+ import '../student/presentation/student_form_screen.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+ import '../student/presentation/student_list_screen.dart';
+-import '../expense/domain/services/expense_service.dart';
+-import '../expense/presentation/expense_screen.dart';
+ import 'domain/entities/dashboard_summary.dart';
+ import 'domain/services/dashboard_service.dart';
+ import 'presentation/widgets/empty_state_panel.dart';
+ import 'presentation/widgets/quick_action_button.dart';
+ import 'presentation/widgets/recent_activity_panel.dart';
+-import 'presentation/widgets/stat_card.dart';
+ 
+-/// Module 2: the school dashboard. Every figure is computed from SQLite by
+-/// [DashboardService]; the UI only formats and displays the summary.
++/// Modern Dashboard Screen wrapped seamlessly in persistent AppShell navigation.
+ class DashboardScreen extends StatefulWidget {
+   const DashboardScreen({
+     super.key,
+@@ -66,12 +73,29 @@ class DashboardScreen extends StatefulWidget {
+ }
+ 
+ class _DashboardScreenState extends State<DashboardScreen> {
++  int _currentNavIndex = 0;
++
+   @override
+   void initState() {
+     super.initState();
+     widget.dashboardService.load();
+   }
+ 
++  static const List<AppNavDestination> _navDestinations = [
++    AppNavDestination(label: 'Dashboard', icon: Icons.dashboard_outlined, selectedIcon: Icons.dashboard),
++    AppNavDestination(label: 'Students', icon: Icons.school_outlined, selectedIcon: Icons.school),
++    AppNavDestination(label: 'Families', icon: Icons.family_restroom_outlined, selectedIcon: Icons.family_restroom),
++    AppNavDestination(label: 'New Admission', icon: Icons.how_to_reg_outlined, selectedIcon: Icons.how_to_reg),
++    AppNavDestination(label: 'Fees', icon: Icons.payments_outlined, selectedIcon: Icons.payments),
++    AppNavDestination(label: 'Staff', icon: Icons.badge_outlined, selectedIcon: Icons.badge),
++    AppNavDestination(label: 'Salaries', icon: Icons.attach_money_outlined, selectedIcon: Icons.attach_money),
++    AppNavDestination(label: 'Expenses', icon: Icons.receipt_long_outlined, selectedIcon: Icons.receipt_long),
++    AppNavDestination(label: 'Reports', icon: Icons.analytics_outlined, selectedIcon: Icons.analytics),
++    AppNavDestination(label: 'Import / Export', icon: Icons.import_export_outlined, selectedIcon: Icons.import_export),
++    AppNavDestination(label: 'Backup & Restore', icon: Icons.backup_outlined, selectedIcon: Icons.backup),
++    AppNavDestination(label: 'Settings', icon: Icons.settings_outlined, selectedIcon: Icons.settings),
++  ];
++
+   Future<void> _openFamilies() async {
+     await Navigator.of(context).push(
+       MaterialPageRoute<void>(
+@@ -212,72 +236,132 @@ class _DashboardScreenState extends State<DashboardScreen> {
+     );
+   }
+ 
++  void _onNavSelected(int index) {
++    setState(() => _currentNavIndex = index);
++  }
++
++  Widget _buildBodyForIndex(int index) {
++    switch (index) {
++      case 0:
++        return _buildDashboardContent();
++      case 1:
++        return StudentListScreen(
++          studentService: widget.studentService,
++          familyService: widget.familyService,
++          settingsService: widget.settingsService,
++        );
++      case 2:
++        return FamilyListScreen(
++          familyService: widget.familyService,
++          studentService: widget.studentService,
++          settingsService: widget.settingsService,
++        );
++      case 3:
++        return AdmissionWizardScreen(
++          studentService: widget.studentService,
++          familyService: widget.familyService,
++          settingsService: widget.settingsService,
++        );
++      case 4:
++        return FeeScreen(
++          feeService: widget.feeService,
++          settingsService: widget.settingsService,
++        );
++      case 5:
++        return EmployeeListScreen(
++          employeeService: widget.employeeService,
++          salaryService: widget.salaryService,
++        );
++      case 6:
++        return SalaryScreen(salaryService: widget.salaryService);
++      case 7:
++        return ExpenseScreen(expenseService: widget.expenseService);
++      case 8:
++        return ReportsHubScreen(reportRepository: widget.reportRepository);
++      case 9:
++        return ImportScreen(
++          service: widget.importService,
++          onFinished: widget.dashboardService.load,
++        );
++      case 10:
++        if (widget.onOpenBackup != null) {
++          widget.onOpenBackup!();
++          return const SizedBox.shrink();
++        }
++        return const Center(child: Text('Backup opened'));
++      case 11:
++        return SettingsScreen(
++          settingsService: widget.settingsService,
++          feeService: widget.feeService,
++        );
++      default:
++        return _buildDashboardContent();
++    }
++  }
++
++  Widget _buildDashboardContent() {
++    return ListenableBuilder(
++      listenable: widget.dashboardService,
++      builder: (context, _) {
++        final service = widget.dashboardService;
++        if (service.isLoading && service.summary == null) {
++          return const Center(child: CircularProgressIndicator());
++        }
++        if (service.error != null && service.summary == null) {
++          return Center(
++            child: AppErrorState(
++              title: 'Dashboard could not be loaded',
++              message: service.error ?? 'Please check connection and retry.',
++              onRetry: service.load,
++            ),
++          );
++        }
++        final summary = service.summary ?? DashboardSummary.empty;
++        final user = widget.authService.currentUser;
++
++        return _DashboardBody(
++          greeting: user?.displayName ?? '',
++          roleLabel: user?.role.label ?? '',
++          summary: summary,
++          onOpenFamilies: _openFamilies,
++          onAddFamily: _addFamily,
++          onOpenStudents: _openStudents,
++          onAddStudent: _addStudent,
++          onNewAdmission: _openNewAdmission,
++          onImportExcel: _openImport,
++          onExportExcel: _exportStudents,
++          onCollectFee: _openFee,
++          onOpenEmployees: _openEmployees,
++          onOpenSalary: _openSalary,
++          onOpenExpense: _openExpense,
++          onOpenReports: _openReports,
++          onOpenBackup: widget.onOpenBackup ??
++              () => Navigator.pushNamed(context, '/backup'),
++        );
++      },
++    );
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     final user = widget.authService.currentUser;
+ 
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: ListenableBuilder(
+-          listenable: widget.settingsService,
+-          builder: (context, _) {
+-            final schoolName = widget.settingsService.profile.schoolName;
+-            return Text(
+-              schoolName.isEmpty ? AppConfig.appName : schoolName,
+-              key: const Key('dashboard_title'),
+-            );
+-          },
+-        ),
+-        actions: [
+-          IconButton(
+-            key: const Key('settings_button'),
+-            tooltip: 'School settings',
+-            icon: const Icon(Icons.settings_outlined),
+-            onPressed: () => Navigator.pushNamed(context, '/settings'),
+-          ),
+-          Padding(
+-            padding: const EdgeInsets.only(right: 12),
+-            child: TextButton.icon(
+-              key: const Key('logout_button'),
+-              onPressed: widget.authService.logout,
+-              icon: const Icon(Icons.logout),
+-              label: const Text('Logout'),
+-            ),
+-          ),
+-        ],
+-      ),
+-      body: ListenableBuilder(
+-        listenable: widget.dashboardService,
+-        builder: (context, _) {
+-          final service = widget.dashboardService;
+-          if (service.isLoading && service.summary == null) {
+-            return const Center(child: CircularProgressIndicator());
+-          }
+-          if (service.error != null && service.summary == null) {
+-            return _ErrorPanel(onRetry: service.load);
+-          }
+-          final summary = service.summary ?? DashboardSummary.empty;
+-          return _DashboardBody(
+-            greeting: user?.displayName ?? '',
+-            roleLabel: user?.role.label ?? '',
+-            summary: summary,
+-            onOpenFamilies: _openFamilies,
+-            onAddFamily: _addFamily,
+-            onOpenStudents: _openStudents,
+-            onAddStudent: _addStudent,
+-            onNewAdmission: _openNewAdmission,
+-            onImportExcel: _openImport,
+-            onExportExcel: _exportStudents,
+-            onCollectFee: _openFee,
+-            onOpenEmployees: _openEmployees,
+-            onOpenSalary: _openSalary,
+-            onOpenExpense: _openExpense,
+-            onOpenReports: _openReports,
+-            onOpenBackup: widget.onOpenBackup ??
+-                () => Navigator.pushNamed(context, '/backup'),
+-          );
+-        },
+-      ),
++    return ListenableBuilder(
++      listenable: widget.settingsService,
++      builder: (context, _) {
++        final schoolName = widget.settingsService.profile.schoolName;
++
++        return AppShell(
++          selectedIndex: _currentNavIndex,
++          onDestinationSelected: _onNavSelected,
++          destinations: _navDestinations,
++          schoolName: schoolName.isEmpty ? AppConfig.appName : schoolName,
++          userName: user?.displayName ?? user?.username ?? 'Admin',
++          userRole: user?.role.label ?? 'Administrator',
++          onLogout: widget.authService.logout,
++          body: _buildBodyForIndex(_currentNavIndex),
++        );
++      },
+     );
+   }
+ }
+@@ -322,86 +406,134 @@ class _DashboardBody extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+     final theme = Theme.of(context);
++    final isDesktop = AppBreakpoints.isDesktop(context);
++
+     return SingleChildScrollView(
+-      padding: const EdgeInsets.all(24),
++      padding: EdgeInsets.all(isDesktop ? 24 : 16),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          _buildGreeting(theme),
+-          const SizedBox(height: 20),
++          AppPageHeader(
++            title: 'Welcome, $greeting',
++            subtitle: '$roleLabel — ${Formatters.dateWithWeekday(summary.asOf)}',
++            actions: [
++              FilledButton.icon(
++                key: const Key('quick_collect_fee_header'),
++                onPressed: onCollectFee,
++                icon: const Icon(Icons.payments_rounded, size: 18),
++                label: const Text('Collect Fee'),
++              ),
++              const SizedBox(width: 8),
++              OutlinedButton.icon(
++                key: const Key('quick_new_admission_header'),
++                onPressed: onNewAdmission,
++                icon: const Icon(Icons.person_add_rounded, size: 18),
++                label: const Text('New Admission'),
++              ),
++            ],
++          ),
++          const SizedBox(height: 12),
+           if (summary.isEmpty) ...[
+             const EmptyStatePanel(),
+             const SizedBox(height: 24),
+           ],
+-          _SectionHeader(title: 'Overview'),
++          const _SectionHeader(title: 'Overview & Key Metrics'),
+           const SizedBox(height: 12),
++          // Responsive Stat Cards Grid
+           Wrap(
+             spacing: 12,
+             runSpacing: 12,
+             children: [
+-              StatCard(
+-                label: 'Active Students',
+-                value: '${summary.activeStudents}',
+-                icon: Icons.school_rounded,
+-                color: Colors.blue,
+-                onTap: onOpenStudents,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'Active Students',
++                  value: '${summary.activeStudents}',
++                  icon: Icons.school_rounded,
++                  color: AppTheme.primaryNavy,
++                  onTap: onOpenStudents,
++                ),
+               ),
+-              StatCard(
+-                label: 'Families',
+-                value: '${summary.families}',
+-                icon: Icons.family_restroom,
+-                color: Colors.teal,
+-                onTap: onOpenFamilies,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'Families',
++                  value: '${summary.families}',
++                  icon: Icons.family_restroom,
++                  color: Colors.teal,
++                  onTap: onOpenFamilies,
++                ),
+               ),
+-              StatCard(
+-                label: 'Active Staff',
+-                value: '${summary.activeEmployees}',
+-                icon: Icons.badge_rounded,
+-                color: Colors.purple,
+-                onTap: onOpenEmployees,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'Active Staff',
++                  value: '${summary.activeEmployees}',
++                  icon: Icons.badge_rounded,
++                  color: Colors.purple,
++                  onTap: onOpenEmployees,
++                ),
+               ),
+-              StatCard(
+-                label: "Today's Collection",
+-                value: Formatters.money(summary.todayCollection),
+-                icon: Icons.today_rounded,
+-                color: Colors.green,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: "Today's Collection",
++                  value: Formatters.money(summary.todayCollection),
++                  icon: Icons.today_rounded,
++                  color: AppTheme.successGreen,
++                ),
+               ),
+-              StatCard(
+-                label: 'This Month Collection',
+-                value: Formatters.money(summary.monthCollection),
+-                icon: Icons.calendar_month_rounded,
+-                color: Colors.green.shade700,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'This Month Fee',
++                  value: Formatters.money(summary.monthCollection),
++                  icon: Icons.calendar_month_rounded,
++                  color: AppTheme.successGreen,
++                ),
+               ),
+-              StatCard(
+-                label: 'Outstanding Fees',
+-                value: Formatters.money(summary.outstandingFees),
+-                icon: Icons.currency_rupee,
+-                color: Colors.orange,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'Outstanding Fees',
++                  value: Formatters.money(summary.outstandingFees),
++                  icon: Icons.priority_high_rounded,
++                  color: AppTheme.dangerRed,
++                ),
+               ),
+-              StatCard(
+-                label: 'This Month Salary',
+-                value: Formatters.money(summary.monthSalary),
+-                icon: Icons.payments_rounded,
+-                color: Colors.indigo,
+-                onTap: onOpenSalary,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'Month Salaries',
++                  value: Formatters.money(summary.monthSalary),
++                  icon: Icons.payments_rounded,
++                  color: Colors.indigo,
++                  onTap: onOpenSalary,
++                ),
+               ),
+-              StatCard(
+-                label: 'Pending Salaries',
+-                value: Formatters.money(summary.monthPendingSalary),
+-                icon: Icons.schedule_rounded,
+-                color: Colors.deepOrange,
+-                onTap: onOpenSalary,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'Pending Salaries',
++                  value: Formatters.money(summary.monthPendingSalary),
++                  icon: Icons.schedule_rounded,
++                  color: AppTheme.warningAmber,
++                  onTap: onOpenSalary,
++                ),
+               ),
+-              StatCard(
+-                label: 'This Month Expenses',
+-                value: Formatters.money(summary.monthExpenses),
+-                icon: Icons.receipt_long_rounded,
+-                color: Colors.red,
++              SizedBox(
++                width: isDesktop ? 220 : 160,
++                child: AppStatCard(
++                  title: 'Month Expenses',
++                  value: Formatters.money(summary.monthExpenses),
++                  icon: Icons.receipt_long_rounded,
++                  color: AppTheme.dangerRed,
++                ),
+               ),
+             ],
+           ),
+           const SizedBox(height: 28),
+-          const _SectionHeader(title: 'Quick Actions'),
++          const _SectionHeader(title: 'Quick Operations'),
+           const SizedBox(height: 12),
+           Wrap(
+             spacing: 12,
+@@ -482,67 +614,40 @@ class _DashboardBody extends StatelessWidget {
+             ],
+           ),
+           const SizedBox(height: 28),
+-          const _SectionHeader(title: 'Recent Activity'),
++          const _SectionHeader(title: 'Recent Activity Logs'),
+           const SizedBox(height: 12),
+           _buildRecentActivity(theme),
+-          const SizedBox(height: 12),
++          const SizedBox(height: 20),
+         ],
+       ),
+     );
+   }
+ 
+-  Widget _buildGreeting(ThemeData theme) {
+-    return Row(
+-      children: [
+-        Expanded(
+-          child: Column(
+-            crossAxisAlignment: CrossAxisAlignment.start,
+-            children: [
+-              Text(
+-                'Welcome, $greeting',
+-                style: theme.textTheme.headlineSmall?.copyWith(
+-                  fontWeight: FontWeight.bold,
+-                ),
+-              ),
+-              const SizedBox(height: 4),
+-              Text(
+-                '$roleLabel — ${Formatters.dateWithWeekday(summary.asOf)}',
+-                style: theme.textTheme.bodyMedium?.copyWith(
+-                  color: theme.colorScheme.outline,
+-                ),
+-              ),
+-            ],
+-          ),
+-        ),
+-      ],
+-    );
+-  }
+-
+   Widget _buildRecentActivity(ThemeData theme) {
+     final panels = [
+       RecentActivityPanel(
+         title: 'Payments',
+         icon: Icons.payments_rounded,
+-        color: Colors.green,
++        color: AppTheme.successGreen,
+         items: summary.recentPayments,
+       ),
+       RecentActivityPanel(
+         title: 'Admissions',
+         icon: Icons.how_to_reg_rounded,
+-        color: Colors.blue,
++        color: AppTheme.primaryNavy,
+         items: summary.recentAdmissions,
+       ),
+       RecentActivityPanel(
+         title: 'Expenses',
+         icon: Icons.receipt_long_rounded,
+-        color: Colors.red,
++        color: AppTheme.dangerRed,
+         items: summary.recentExpenses,
+       ),
+     ];
+ 
+     return LayoutBuilder(
+       builder: (context, constraints) {
+-        if (constraints.maxWidth >= 1100) {
++        if (constraints.maxWidth >= 1024) {
+           return Row(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+@@ -575,58 +680,11 @@ class _SectionHeader extends StatelessWidget {
+   Widget build(BuildContext context) {
+     return Text(
+       title,
+-      style: Theme.of(
+-        context,
+-      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+-    );
+-  }
+-}
+-
+-class _ErrorPanel extends StatelessWidget {
+-  const _ErrorPanel({required this.onRetry});
+-
+-  final Future<void> Function() onRetry;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final theme = Theme.of(context);
+-    return Center(
+-      child: ConstrainedBox(
+-        constraints: const BoxConstraints(maxWidth: 420),
+-        child: Card(
+-          margin: const EdgeInsets.all(24),
+-          child: Padding(
+-            padding: const EdgeInsets.all(32),
+-            child: Column(
+-              mainAxisSize: MainAxisSize.min,
+-              children: [
+-                Icon(
+-                  Icons.error_outline,
+-                  size: 48,
+-                  color: theme.colorScheme.error,
+-                ),
+-                const SizedBox(height: 12),
+-                Text(
+-                  'The dashboard could not be loaded.',
+-                  textAlign: TextAlign.center,
+-                  style: theme.textTheme.titleMedium,
+-                ),
+-                const SizedBox(height: 8),
+-                Text(
+-                  'Please try again.',
+-                  textAlign: TextAlign.center,
+-                  style: theme.textTheme.bodyMedium,
+-                ),
+-                const SizedBox(height: 20),
+-                FilledButton.icon(
+-                  onPressed: onRetry,
+-                  icon: const Icon(Icons.refresh),
+-                  label: const Text('Retry'),
+-                ),
+-              ],
+-            ),
+-          ),
+-        ),
++      style: const TextStyle(
++        fontSize: 16,
++        fontWeight: FontWeight.w700,
++        color: Color(0xFF0F172A),
++        letterSpacing: -0.2,
+       ),
+     );
+   }
+diff --git a/lib/features/employee/presentation/employee_form_screen.dart b/lib/features/employee/presentation/employee_form_screen.dart
+index bd063c1..8eca91c 100644
+--- a/lib/features/employee/presentation/employee_form_screen.dart
++++ b/lib/features/employee/presentation/employee_form_screen.dart
+@@ -324,7 +324,7 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
+         child: SingleChildScrollView(
+           padding: const EdgeInsets.all(24),
+           child: ConstrainedBox(
+-            constraints: const BoxConstraints(maxWidth: 640),
++            constraints: const BoxConstraints(maxWidth: 880),
+             child: Card(
+               margin: EdgeInsets.zero,
+               child: Padding(
+diff --git a/lib/features/employee/presentation/employee_list_screen.dart b/lib/features/employee/presentation/employee_list_screen.dart
+index 91cf06c..88abb23 100644
+--- a/lib/features/employee/presentation/employee_list_screen.dart
++++ b/lib/features/employee/presentation/employee_list_screen.dart
+@@ -1,15 +1,24 @@
+ import 'package:flutter/material.dart';
+ 
++import '../../core/config/app_config.dart';
++import '../../salary/domain/services/salary_service.dart';
++import '../../shared/theme/app_breakpoints.dart';
++import '../../shared/theme/app_theme.dart';
++import '../../shared/utils/formatters.dart';
++import '../../shared/widgets/app_data_table.dart';
++import '../../shared/widgets/app_empty_state.dart';
++import '../../shared/widgets/app_error_state.dart';
++import '../../shared/widgets/app_page_header.dart';
++import '../../shared/widgets/app_status_chip.dart';
+ import '../domain/entities/employee.dart';
+ import '../domain/entities/employee_category.dart';
+ import '../domain/entities/employee_status.dart';
+ import '../domain/services/employee_service.dart';
+-import '../../salary/domain/services/salary_service.dart';
+ import 'employee_details_screen.dart';
+ import 'employee_form_screen.dart';
+ import 'widgets/employee_card.dart';
+ 
+-/// Employee list + fast search with category/status filters.
++/// Modern Employee list with responsive desktop data table and mobile cards.
+ class EmployeeListScreen extends StatefulWidget {
+   const EmployeeListScreen({
+     super.key,
+@@ -25,12 +34,21 @@ class EmployeeListScreen extends StatefulWidget {
+ }
+ 
+ class _EmployeeListScreenState extends State<EmployeeListScreen> {
++  final TextEditingController _searchController = TextEditingController();
++
+   @override
+   void initState() {
+     super.initState();
++    _searchController.text = widget.employeeService.query;
+     widget.employeeService.search(widget.employeeService.query);
+   }
+ 
++  @override
++  void dispose() {
++    _searchController.dispose();
++    super.dispose();
++  }
++
+   Future<void> _openCreate() async {
+     await Navigator.of(context).push(
+       MaterialPageRoute<void>(
+@@ -58,47 +76,74 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
+ 
+   @override
+   Widget build(BuildContext context) {
++    final isDesktop = AppBreakpoints.isDesktop(context);
++
+     return Scaffold(
+-      appBar: AppBar(title: const Text('Staff Management')),
+-      floatingActionButton: FloatingActionButton.extended(
+-        key: const Key('employee_add_fab'),
+-        onPressed: _openCreate,
+-        icon: const Icon(Icons.add),
+-        label: const Text('Add Staff'),
+-      ),
++      floatingActionButton: isDesktop
++          ? null
++          : FloatingActionButton.extended(
++              key: const Key('employee_add_fab'),
++              onPressed: _openCreate,
++              icon: const Icon(Icons.add),
++              label: const Text('Add Staff'),
++            ),
+       body: ListenableBuilder(
+         listenable: widget.employeeService,
+         builder: (context, _) {
+           final service = widget.employeeService;
++
+           return Column(
++            crossAxisAlignment: CrossAxisAlignment.stretch,
+             children: [
+-              Padding(
+-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+-                child: TextField(
+-                  key: const Key('employee_search_field'),
+-                  onChanged: (value) => service.search(value),
+-                  decoration: const InputDecoration(
+-                    prefixIcon: Icon(Icons.search),
+-                    hintText:
+-                        'Search by employee ID, name, designation or phone…',
+-                    border: OutlineInputBorder(),
+-                    isDense: true,
++              AppPageHeader(
++                title: 'Staff Directory',
++                subtitle: '${service.results.length} faculty and operational employees',
++                actions: [
++                  FilledButton.icon(
++                    key: const Key('employee_add_desktop_btn'),
++                    onPressed: _openCreate,
++                    icon: const Icon(Icons.add_rounded, size: 18),
++                    label: const Text('Add Staff'),
+                   ),
+-                ),
++                ],
+               ),
++              // Filter Toolbar
+               Padding(
+-                padding: const EdgeInsets.symmetric(horizontal: 16),
++                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                 child: Wrap(
+-                  spacing: 8,
+-                  runSpacing: 8,
++                  spacing: 12,
++                  runSpacing: 12,
++                  crossAxisAlignment: WrapCrossAlignment.center,
+                   children: [
+                     SizedBox(
+-                      width: 160,
++                      width: 320,
++                      child: TextField(
++                        key: const Key('employee_search_field'),
++                        controller: _searchController,
++                        onChanged: (value) => service.search(value),
++                        decoration: InputDecoration(
++                          hintText: 'Search by ID, name, designation or phone…',
++                          prefixIcon: const Icon(Icons.search, size: 20),
++                          isDense: true,
++                          suffixIcon: _searchController.text.isNotEmpty
++                              ? IconButton(
++                                  icon: const Icon(Icons.clear, size: 18),
++                                  onPressed: () {
++                                    _searchController.clear();
++                                    service.search('');
++                                  },
++                                )
++                              : null,
++                        ),
++                      ),
++                    ),
++                    SizedBox(
++                      width: 170,
+                       child: _FilterDropdown<EmployeeStatus>(
+                         key: const Key('employee_status_filter'),
+                         label: 'Status',
+                         value: service.statusFilter,
+-                        items: {
++                        items: const {
+                           null: 'All statuses',
+                           EmployeeStatus.active: 'Active',
+                           EmployeeStatus.inactive: 'Inactive',
+@@ -114,8 +159,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
+                         value: service.categoryFilter,
+                         items: {
+                           null: 'All categories',
+-                          for (final c in EmployeeService.categories)
+-                            c: c.label,
++                          for (final c in EmployeeService.categories) c: c.label,
+                         },
+                         onChanged: service.setCategoryFilter,
+                       ),
+@@ -123,8 +167,8 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
+                   ],
+                 ),
+               ),
+-              const SizedBox(height: 8),
+-              Expanded(child: _buildContent(service)),
++              const SizedBox(height: 12),
++              Expanded(child: _buildBody(context, service, isDesktop)),
+             ],
+           );
+         },
+@@ -132,74 +176,102 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
+     );
+   }
+ 
+-  Widget _buildContent(EmployeeService service) {
+-    final theme = Theme.of(context);
++  Widget _buildBody(BuildContext context, EmployeeService service, bool isDesktop) {
+     if (service.isLoading && service.results.isEmpty) {
+       return const Center(child: CircularProgressIndicator());
+     }
++
+     if (service.error != null) {
+-      return Center(
+-        child: Padding(
+-          padding: const EdgeInsets.all(24),
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              Text(
+-                'Staff could not be loaded.',
+-                style: theme.textTheme.titleMedium,
+-              ),
+-              const SizedBox(height: 12),
+-              FilledButton.icon(
+-                onPressed: service.refresh,
+-                icon: const Icon(Icons.refresh),
+-                label: const Text('Retry'),
+-              ),
+-            ],
+-          ),
+-        ),
++      return AppErrorState(
++        title: 'Could not load staff',
++        message: service.error!,
++        onRetry: service.refresh,
+       );
+     }
++
+     if (service.results.isEmpty) {
+-      return Center(
+-        child: Padding(
+-          padding: const EdgeInsets.all(24),
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              Icon(
+-                Icons.groups_outlined,
+-                size: 48,
+-                color: theme.colorScheme.outline,
+-              ),
+-              const SizedBox(height: 12),
+-              Text(
+-                'No staff found.',
+-                style: theme.textTheme.titleMedium,
+-              ),
+-              const SizedBox(height: 4),
+-              Text(
+-                'Try a different search or filter, or use "Add Staff" to '
+-                'register someone.',
+-                textAlign: TextAlign.center,
+-                style: theme.textTheme.bodySmall?.copyWith(
+-                  color: theme.colorScheme.outline,
++      return AppEmptyState(
++        title: 'No staff found',
++        message: 'Try changing your search terms or filters, or add a staff member.',
++        actionLabel: 'Add Staff',
++        onAction: _openCreate,
++      );
++    }
++
++    // Responsive Desktop Data Table
++    if (isDesktop) {
++      return Padding(
++        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
++        child: AppDataTable(
++          columns: const [
++            DataColumn(label: Text('STAFF ID')),
++            DataColumn(label: Text('NAME')),
++            DataColumn(label: Text('DESIGNATION')),
++            DataColumn(label: Text('CATEGORY')),
++            DataColumn(label: Text('MONTHLY BASE SALARY')),
++            DataColumn(label: Text('PHONE')),
++            DataColumn(label: Text('STATUS')),
++            DataColumn(label: Text('ACTIONS')),
++          ],
++          rows: service.results.map((e) {
++            return DataRow(
++              cells: [
++                DataCell(
++                  Text(
++                    e.employeeCode,
++                    style: const TextStyle(fontWeight: FontWeight.w600),
++                  ),
+                 ),
+-              ),
+-            ],
+-          ),
++                DataCell(
++                  InkWell(
++                    onTap: () => _openDetails(e),
++                    child: Text(
++                      e.fullName,
++                      style: const TextStyle(
++                        fontWeight: FontWeight.w600,
++                        color: AppTheme.primaryNavy,
++                      ),
++                    ),
++                  ),
++                ),
++                DataCell(Text(e.designation)),
++                DataCell(Text(e.category.label)),
++                DataCell(
++                  Text(
++                    Formatters.money(e.baseSalary),
++                    style: const TextStyle(fontWeight: FontWeight.w600),
++                  ),
++                ),
++                DataCell(Text(e.primaryPhone)),
++                DataCell(
++                  AppStatusChip(
++                    label: e.status.label,
++                    isSuccess: e.status == EmployeeStatus.active,
++                    isDanger: e.status == EmployeeStatus.inactive,
++                  ),
++                ),
++                DataCell(
++                  IconButton(
++                    icon: const Icon(Icons.chevron_right, size: 20),
++                    tooltip: 'View Staff Details',
++                    onPressed: () => _openDetails(e),
++                  ),
++                ),
++              ],
++            );
++          }).toList(),
+         ),
+       );
+     }
++
++    // Mobile / Tablet Card View
+     return ListView.separated(
+       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+       itemCount: service.results.length,
+-      separatorBuilder: (_, _) => const SizedBox(height: 8),
++      separatorBuilder: (_, __) => const SizedBox(height: 8),
+       itemBuilder: (context, index) {
+-        final employee = service.results[index];
+-        return EmployeeCard(
+-          employee: employee,
+-          onTap: () => _openDetails(employee),
+-        );
++        final item = service.results[index];
++        return EmployeeCard(employee: item, onTap: () => _openDetails(item));
+       },
+     );
+   }
+@@ -224,7 +296,6 @@ class _FilterDropdown<T> extends StatelessWidget {
+     return InputDecorator(
+       decoration: InputDecoration(
+         labelText: label,
+-        border: const OutlineInputBorder(),
+         isDense: true,
+         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+       ),
+diff --git a/lib/features/expense/presentation/expense_form_screen.dart b/lib/features/expense/presentation/expense_form_screen.dart
+index a205027..79a6281 100644
+--- a/lib/features/expense/presentation/expense_form_screen.dart
++++ b/lib/features/expense/presentation/expense_form_screen.dart
+@@ -98,7 +98,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
+         child: SingleChildScrollView(
+           padding: const EdgeInsets.all(24),
+           child: ConstrainedBox(
+-            constraints: const BoxConstraints(maxWidth: 640),
++            constraints: const BoxConstraints(maxWidth: 860),
+             child: Card(
+               margin: EdgeInsets.zero,
+               child: Padding(
+diff --git a/lib/features/expense/presentation/expense_screen.dart b/lib/features/expense/presentation/expense_screen.dart
+index bd9c490..7792aeb 100644
+--- a/lib/features/expense/presentation/expense_screen.dart
++++ b/lib/features/expense/presentation/expense_screen.dart
+@@ -1,131 +1,65 @@
+ import 'package:flutter/material.dart';
+ 
++import '../../shared/theme/app_theme.dart';
+ import '../domain/services/expense_service.dart';
+ import 'expense_form_screen.dart';
+ import 'expense_list_screen.dart';
+ import 'expense_reports_screen.dart';
+ 
+-/// Module 10 hub. Reached from the dashboard or navigation, routes to every
+-/// expense feature.
+-class ExpenseScreen extends StatelessWidget {
+-  const ExpenseScreen({super.key, required this.expenseService});
++/// Modern Expense Management Hub with integrated tab navigation.
++class ExpenseScreen extends StatefulWidget {
++  const ExpenseScreen({super.key, required this.expenseService, this.initialTabIndex = 0});
+ 
+   final ExpenseService expenseService;
++  final int initialTabIndex;
+ 
+-  Future<void> _push(BuildContext context, Widget screen) {
+-    return Navigator.of(context).push(
+-      MaterialPageRoute<void>(builder: (_) => screen),
+-    );
+-  }
++  @override
++  State<ExpenseScreen> createState() => _ExpenseScreenState();
++}
++
++class _ExpenseScreenState extends State<ExpenseScreen> with SingleTickerProviderStateMixin {
++  late final TabController _tabController;
+ 
+   @override
+-  Widget build(BuildContext context) {
+-    return Scaffold(
+-      appBar: AppBar(title: const Text('Expense Management')),
+-      body: ListView(
+-        padding: const EdgeInsets.all(16),
+-        children: [
+-          _ExpenseMenuTile(
+-            key: const Key('expense_menu_list'),
+-            icon: Icons.receipt_long_rounded,
+-            color: Colors.red,
+-            title: 'Expense List',
+-            subtitle:
+-                'Search, filter and review expense records by date, category, '
+-                'amount or reference.',
+-            onTap: () => _push(
+-              context,
+-              ExpenseListScreen(expenseService: expenseService),
+-            ),
+-          ),
+-          _ExpenseMenuTile(
+-            key: const Key('expense_menu_add'),
+-            icon: Icons.add_card_rounded,
+-            color: Colors.green,
+-            title: 'Add Expense',
+-            subtitle: 'Record a new school expense.',
+-            onTap: () => _push(
+-              context,
+-              ExpenseFormScreen(expenseService: expenseService),
+-            ),
+-          ),
+-          _ExpenseMenuTile(
+-            key: const Key('expense_menu_reports'),
+-            icon: Icons.insert_chart_rounded,
+-            color: Colors.purple,
+-            title: 'Reports',
+-            subtitle:
+-                'Monthly totals, category breakdown, date-range reports, export.',
+-            onTap: () => _push(
+-              context,
+-              ExpenseReportsScreen(expenseService: expenseService),
+-            ),
+-          ),
+-        ],
+-      ),
++  void initState() {
++    super.initState();
++    _tabController = TabController(
++      length: 3,
++      vsync: this,
++      initialIndex: widget.initialTabIndex,
+     );
+   }
+-}
+-
+-class _ExpenseMenuTile extends StatelessWidget {
+-  const _ExpenseMenuTile({
+-    super.key,
+-    required this.icon,
+-    required this.color,
+-    required this.title,
+-    required this.subtitle,
+-    required this.onTap,
+-  });
+ 
+-  final IconData icon;
+-  final Color color;
+-  final String title;
+-  final String subtitle;
+-  final VoidCallback onTap;
++  @override
++  void dispose() {
++    _tabController.dispose();
++    super.dispose();
++  }
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final theme = Theme.of(context);
+-    return Card(
+-      margin: const EdgeInsets.only(bottom: 12),
+-      child: InkWell(
+-        borderRadius: BorderRadius.circular(12),
+-        onTap: onTap,
+-        child: Padding(
+-          padding: const EdgeInsets.all(16),
+-          child: Row(
+-            children: [
+-              CircleAvatar(
+-                radius: 22,
+-                backgroundColor: color.withValues(alpha: 0.12),
+-                child: Icon(icon, color: color),
+-              ),
+-              const SizedBox(width: 16),
+-              Expanded(
+-                child: Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  children: [
+-                    Text(
+-                      title,
+-                      style: theme.textTheme.titleMedium?.copyWith(
+-                        fontWeight: FontWeight.bold,
+-                      ),
+-                    ),
+-                    const SizedBox(height: 2),
+-                    Text(
+-                      subtitle,
+-                      style: theme.textTheme.bodySmall?.copyWith(
+-                        color: theme.colorScheme.outline,
+-                      ),
+-                    ),
+-                  ],
+-                ),
+-              ),
+-              Icon(Icons.chevron_right, color: theme.colorScheme.outline),
+-            ],
+-          ),
++    return Scaffold(
++      appBar: AppBar(
++        title: const Text('Expense Management'),
++        bottom: TabBar(
++          controller: _tabController,
++          labelColor: AppTheme.primaryNavy,
++          indicatorColor: AppTheme.primaryNavy,
++          tabs: const [
++            Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Expense List'),
++            Tab(icon: Icon(Icons.add_card_outlined), text: 'Add Expense'),
++            Tab(icon: Icon(Icons.analytics_outlined), text: 'Reports'),
++          ],
+         ),
+       ),
++      body: TabBarView(
++        controller: _tabController,
++        children: [
++          ExpenseListScreen(expenseService: widget.expenseService),
++          ExpenseFormScreen(expenseService: widget.expenseService),
++          ExpenseReportsScreen(expenseService: widget.expenseService),
++        ],
++      ),
+     );
+   }
+ }
+\ No newline at end of file
+diff --git a/lib/features/family/presentation/family_form_screen.dart b/lib/features/family/presentation/family_form_screen.dart
+index e7c5d78..2503bc7 100644
+--- a/lib/features/family/presentation/family_form_screen.dart
++++ b/lib/features/family/presentation/family_form_screen.dart
+@@ -276,7 +276,7 @@ class _FamilyFormScreenState extends State<FamilyFormScreen> {
+         child: SingleChildScrollView(
+           padding: const EdgeInsets.all(24),
+           child: ConstrainedBox(
+-            constraints: const BoxConstraints(maxWidth: 640),
++            constraints: const BoxConstraints(maxWidth: 860),
+             child: Card(
+               margin: EdgeInsets.zero,
+               child: Padding(
+diff --git a/lib/features/family/presentation/family_list_screen.dart b/lib/features/family/presentation/family_list_screen.dart
+index bb89434..7ffc458 100644
+--- a/lib/features/family/presentation/family_list_screen.dart
++++ b/lib/features/family/presentation/family_list_screen.dart
+@@ -1,6 +1,12 @@
+ import 'package:flutter/material.dart';
+ 
+ import '../../settings/domain/services/settings_service.dart';
++import '../../shared/theme/app_breakpoints.dart';
++import '../../shared/theme/app_theme.dart';
++import '../../shared/widgets/app_data_table.dart';
++import '../../shared/widgets/app_empty_state.dart';
++import '../../shared/widgets/app_error_state.dart';
++import '../../shared/widgets/app_page_header.dart';
+ import '../../student/domain/services/student_service.dart';
+ import '../domain/entities/family_list_item.dart';
+ import '../domain/services/family_service.dart';
+@@ -8,7 +14,7 @@ import 'family_details_screen.dart';
+ import 'family_form_screen.dart';
+ import 'widgets/family_card.dart';
+ 
+-/// Family list + search. Reaches the create form and the family profile.
++/// Modern Family list with responsive desktop data table and mobile cards.
+ class FamilyListScreen extends StatefulWidget {
+   const FamilyListScreen({
+     super.key,
+@@ -26,12 +32,21 @@ class FamilyListScreen extends StatefulWidget {
+ }
+ 
+ class _FamilyListScreenState extends State<FamilyListScreen> {
++  final TextEditingController _searchController = TextEditingController();
++
+   @override
+   void initState() {
+     super.initState();
++    _searchController.text = widget.familyService.query;
+     widget.familyService.search(widget.familyService.query);
+   }
+ 
++  @override
++  void dispose() {
++    _searchController.dispose();
++    super.dispose();
++  }
++
+   Future<void> _openDetails(FamilyListItem item) async {
+     await Navigator.of(context).push(
+       MaterialPageRoute<void>(
+@@ -61,35 +76,65 @@ class _FamilyListScreenState extends State<FamilyListScreen> {
+ 
+   @override
+   Widget build(BuildContext context) {
++    final isDesktop = AppBreakpoints.isDesktop(context);
++
+     return Scaffold(
+-      appBar: AppBar(title: const Text('Family Management')),
+-      floatingActionButton: FloatingActionButton.extended(
+-        key: const Key('family_add_fab'),
+-        onPressed: _openCreate,
+-        icon: const Icon(Icons.add),
+-        label: const Text('Add Family'),
+-      ),
++      floatingActionButton: isDesktop
++          ? null
++          : FloatingActionButton.extended(
++              key: const Key('family_add_fab'),
++              onPressed: _openCreate,
++              icon: const Icon(Icons.add),
++              label: const Text('Add Family'),
++            ),
+       body: ListenableBuilder(
+         listenable: widget.familyService,
+         builder: (context, _) {
+           final service = widget.familyService;
++
+           return Column(
++            crossAxisAlignment: CrossAxisAlignment.stretch,
+             children: [
++              AppPageHeader(
++                title: 'Family Management',
++                subtitle: '${service.results.length} registered family units',
++                actions: [
++                  FilledButton.icon(
++                    key: const Key('family_add_desktop_btn'),
++                    onPressed: _openCreate,
++                    icon: const Icon(Icons.add_rounded, size: 18),
++                    label: const Text('Add Family'),
++                  ),
++                ],
++              ),
++              // Filter Toolbar
+               Padding(
+-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+-                child: TextField(
+-                  key: const Key('family_search_field'),
+-                  onChanged: (value) => service.search(value),
+-                  decoration: const InputDecoration(
+-                    prefixIcon: Icon(Icons.search),
+-                    hintText:
+-                        'Search by family ID, guardian, phone or student…',
+-                    border: OutlineInputBorder(),
+-                    isDense: true,
++                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
++                child: SizedBox(
++                  maxWidth: 420,
++                  child: TextField(
++                    key: const Key('family_search_field'),
++                    controller: _searchController,
++                    onChanged: (value) => service.search(value),
++                    decoration: InputDecoration(
++                      hintText: 'Search by family ID, guardian, phone or student…',
++                      prefixIcon: const Icon(Icons.search, size: 20),
++                      isDense: true,
++                      suffixIcon: _searchController.text.isNotEmpty
++                          ? IconButton(
++                              icon: const Icon(Icons.clear, size: 18),
++                              onPressed: () {
++                                _searchController.clear();
++                                service.search('');
++                              },
++                            )
++                          : null,
++                    ),
+                   ),
+                 ),
+               ),
+-              Expanded(child: _buildContent(service)),
++              const SizedBox(height: 12),
++              Expanded(child: _buildBody(context, service, isDesktop)),
+             ],
+           );
+         },
+@@ -97,66 +142,90 @@ class _FamilyListScreenState extends State<FamilyListScreen> {
+     );
+   }
+ 
+-  Widget _buildContent(FamilyService service) {
+-    final theme = Theme.of(context);
++  Widget _buildBody(BuildContext context, FamilyService service, bool isDesktop) {
+     if (service.isLoading && service.results.isEmpty) {
+       return const Center(child: CircularProgressIndicator());
+     }
++
+     if (service.error != null) {
+-      return Center(
+-        child: Padding(
+-          padding: const EdgeInsets.all(24),
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              Text(
+-                'Families could not be loaded.',
+-                style: theme.textTheme.titleMedium,
+-              ),
+-              const SizedBox(height: 12),
+-              FilledButton.icon(
+-                onPressed: service.refresh,
+-                icon: const Icon(Icons.refresh),
+-                label: const Text('Retry'),
+-              ),
+-            ],
+-          ),
+-        ),
++      return AppErrorState(
++        title: 'Could not load families',
++        message: service.error!,
++        onRetry: service.refresh,
+       );
+     }
++
+     if (service.results.isEmpty) {
+-      return Center(
+-        child: Padding(
+-          padding: const EdgeInsets.all(24),
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              Icon(
+-                Icons.family_restroom,
+-                size: 48,
+-                color: theme.colorScheme.outline,
+-              ),
+-              const SizedBox(height: 12),
+-              Text(
+-                'No families found yet.',
+-                style: theme.textTheme.titleMedium,
+-              ),
+-              const SizedBox(height: 4),
+-              Text(
+-                'Use "Add Family" to create the first record.',
+-                style: theme.textTheme.bodySmall?.copyWith(
+-                  color: theme.colorScheme.outline,
++      return AppEmptyState(
++        title: 'No families found',
++        message: 'Try changing your search terms or add a new family.',
++        actionLabel: 'Add Family',
++        onAction: _openCreate,
++      );
++    }
++
++    // Responsive Desktop Data Table
++    if (isDesktop) {
++      return Padding(
++        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
++        child: AppDataTable(
++          columns: const [
++            DataColumn(label: Text('FAMILY ID')),
++            DataColumn(label: Text('GUARDIAN NAME')),
++            DataColumn(label: Text('RELATION')),
++            DataColumn(label: Text('PRIMARY PHONE')),
++            DataColumn(label: Text('ENROLLED CHILDREN')),
++            DataColumn(label: Text('ACTIONS')),
++          ],
++          rows: service.results.map((item) {
++            final f = item.family;
++            return DataRow(
++              cells: [
++                DataCell(
++                  Text(
++                    f.code,
++                    style: const TextStyle(fontWeight: FontWeight.w600),
++                  ),
+                 ),
+-              ),
+-            ],
+-          ),
++                DataCell(
++                  InkWell(
++                    onTap: () => _openDetails(item),
++                    child: Text(
++                      f.guardianName,
++                      style: const TextStyle(
++                        fontWeight: FontWeight.w600,
++                        color: AppTheme.primaryNavy,
++                      ),
++                    ),
++                  ),
++                ),
++                DataCell(Text(f.relationship ?? 'Guardian')),
++                DataCell(Text(f.primaryPhone)),
++                DataCell(
++                  Text(
++                    '${item.activeStudentCount} active (${item.totalStudentCount} total)',
++                    style: const TextStyle(fontWeight: FontWeight.w500),
++                  ),
++                ),
++                DataCell(
++                  IconButton(
++                    icon: const Icon(Icons.chevron_right, size: 20),
++                    tooltip: 'View Family Details',
++                    onPressed: () => _openDetails(item),
++                  ),
++                ),
++              ],
++            );
++          }).toList(),
+         ),
+       );
+     }
++
++    // Mobile / Tablet Card View
+     return ListView.separated(
+       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+       itemCount: service.results.length,
+-      separatorBuilder: (_, _) => const SizedBox(height: 8),
++      separatorBuilder: (_, __) => const SizedBox(height: 8),
+       itemBuilder: (context, index) {
+         final item = service.results[index];
+         return FamilyCard(item: item, onTap: () => _openDetails(item));
+diff --git a/lib/features/fee/presentation/fee_screen.dart b/lib/features/fee/presentation/fee_screen.dart
+index 9c48c0d..ac19bce 100644
+--- a/lib/features/fee/presentation/fee_screen.dart
++++ b/lib/features/fee/presentation/fee_screen.dart
+@@ -1,6 +1,7 @@
+ import 'package:flutter/material.dart';
+ 
+ import '../../settings/domain/services/settings_service.dart';
++import '../../shared/theme/app_theme.dart';
+ import '../application/fee_service.dart';
+ import 'collect_payment_screen.dart';
+ import 'fee_generate_screen.dart';
+@@ -8,164 +9,80 @@ import 'fee_records_screen.dart';
+ import 'fee_reports_screen.dart';
+ import 'fee_structures_screen.dart';
+ 
+-/// Module 7 hub. Reached from the dashboard "Collect Fee" quick action and
+-/// routes to every fee feature.
+-class FeeScreen extends StatelessWidget {
++/// Modern Fee Management Hub with intuitive operational tab bars and quick actions.
++class FeeScreen extends StatefulWidget {
+   const FeeScreen({
+     super.key,
+     required this.feeService,
+     required this.settingsService,
++    this.initialTabIndex = 0,
+   });
+ 
+   final FeeService feeService;
+   final SettingsService settingsService;
++  final int initialTabIndex;
+ 
+-  Future<void> _push(BuildContext context, Widget screen) {
+-    return Navigator.of(context).push(
+-      MaterialPageRoute<void>(builder: (_) => screen),
++  @override
++  State<FeeScreen> createState() => _FeeScreenState();
++}
++
++class _FeeScreenState extends State<FeeScreen> with SingleTickerProviderStateMixin {
++  late final TabController _tabController;
++
++  @override
++  void initState() {
++    super.initState();
++    _tabController = TabController(
++      length: 5,
++      vsync: this,
++      initialIndex: widget.initialTabIndex,
+     );
+   }
+ 
++  @override
++  void dispose() {
++    _tabController.dispose();
++    super.dispose();
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     return Scaffold(
+-      appBar: AppBar(title: const Text('Fee Management')),
+-      body: ListView(
+-        padding: const EdgeInsets.all(16),
++      appBar: AppBar(
++        title: const Text('Fee Management'),
++        bottom: TabBar(
++          controller: _tabController,
++          isScrollable: true,
++          labelColor: AppTheme.primaryNavy,
++          indicatorColor: AppTheme.primaryNavy,
++          tabs: const [
++            Tab(icon: Icon(Icons.payments_outlined), text: 'Collect Payment'),
++            Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Fee Records'),
++            Tab(icon: Icon(Icons.auto_awesome_outlined), text: 'Generate Monthly'),
++            Tab(icon: Icon(Icons.rule_outlined), text: 'Fee Structures'),
++            Tab(icon: Icon(Icons.analytics_outlined), text: 'Fee Reports'),
++          ],
++        ),
++      ),
++      body: TabBarView(
++        controller: _tabController,
+         children: [
+-          _FeeMenuTile(
+-            key: const Key('fee_menu_collect'),
+-            icon: Icons.payments_rounded,
+-            color: Colors.green,
+-            title: 'Collect Payment',
+-            subtitle: 'Search a student and record a payment with a receipt.',
+-            onTap: () => _push(
+-              context,
+-              CollectPaymentScreen(
+-                feeService: feeService,
+-                settingsService: settingsService,
+-              ),
+-            ),
++          CollectPaymentScreen(
++            feeService: widget.feeService,
++            settingsService: widget.settingsService,
+           ),
+-          _FeeMenuTile(
+-            key: const Key('fee_menu_records'),
+-            icon: Icons.receipt_long_rounded,
+-            color: Colors.indigo,
+-            title: 'Fee Records',
+-            subtitle:
+-                'Search and review monthly fee records by student, class, '
+-                'month or status.',
+-            onTap: () => _push(
+-              context,
+-              FeeRecordsScreen(
+-                feeService: feeService,
+-                settingsService: settingsService,
+-              ),
+-            ),
++          FeeRecordsScreen(
++            feeService: widget.feeService,
++            settingsService: widget.settingsService,
+           ),
+-          _FeeMenuTile(
+-            key: const Key('fee_menu_generate'),
+-            icon: Icons.auto_awesome_rounded,
+-            color: Colors.teal,
+-            title: 'Generate Monthly Fee',
+-            subtitle: "Create the month's fee charges for all active students.",
+-            onTap: () => _push(
+-              context,
+-              FeeGenerateScreen(feeService: feeService),
+-            ),
+-          ),
+-          _FeeMenuTile(
+-            key: const Key('fee_menu_structures'),
+-            icon: Icons.rule_rounded,
+-            color: Colors.orange,
+-            title: 'Fee Structures',
+-            subtitle: 'Monthly fee rules per class and the default rule.',
+-            onTap: () => _push(
+-              context,
+-              FeeStructuresScreen(feeService: feeService),
+-            ),
+-          ),
+-          _FeeMenuTile(
+-            key: const Key('fee_menu_reports'),
+-            icon: Icons.insert_chart_rounded,
+-            color: Colors.purple,
+-            title: 'Reports',
+-            subtitle:
+-                'Collection, unpaid students, outstanding, family balances '
+-                'and student history.',
+-            onTap: () => _push(
+-              context,
+-              FeeReportsScreen(
+-                feeService: feeService,
+-                settingsService: settingsService,
+-              ),
+-            ),
++          FeeGenerateScreen(feeService: widget.feeService),
++          FeeStructuresScreen(feeService: widget.feeService),
++          FeeReportsScreen(
++            feeService: widget.feeService,
++            settingsService: widget.settingsService,
+           ),
+         ],
+       ),
+     );
+   }
+ }
+-
+-class _FeeMenuTile extends StatelessWidget {
+-  const _FeeMenuTile({
+-    super.key,
+-    required this.icon,
+-    required this.color,
+-    required this.title,
+-    required this.subtitle,
+-    required this.onTap,
+-  });
+-
+-  final IconData icon;
+-  final Color color;
+-  final String title;
+-  final String subtitle;
+-  final VoidCallback onTap;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final theme = Theme.of(context);
+-    return Card(
+-      margin: const EdgeInsets.only(bottom: 12),
+-      child: InkWell(
+-        borderRadius: BorderRadius.circular(12),
+-        onTap: onTap,
+-        child: Padding(
+-          padding: const EdgeInsets.all(16),
+-          child: Row(
+-            children: [
+-              CircleAvatar(
+-                radius: 22,
+-                backgroundColor: color.withValues(alpha: 0.12),
+-                child: Icon(icon, color: color),
+-              ),
+-              const SizedBox(width: 16),
+-              Expanded(
+-                child: Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  children: [
+-                    Text(
+-                      title,
+-                      style: theme.textTheme.titleMedium?.copyWith(
+-                        fontWeight: FontWeight.bold,
+-                      ),
+-                    ),
+-                    const SizedBox(height: 2),
+-                    Text(
+-                      subtitle,
+-                      style: theme.textTheme.bodySmall?.copyWith(
+-                        color: theme.colorScheme.outline,
+-                      ),
+-                    ),
+-                  ],
+-                ),
+-              ),
+-              Icon(Icons.chevron_right, color: theme.colorScheme.outline),
+-            ],
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/features/reports/presentation/admission_reports_screen.dart b/lib/features/reports/presentation/admission_reports_screen.dart
+index 0e160d6..27a2a7e 100644
+--- a/lib/features/reports/presentation/admission_reports_screen.dart
++++ b/lib/features/reports/presentation/admission_reports_screen.dart
+@@ -1,12 +1,10 @@
+ import 'package:flutter/material.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_category.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_definition.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_filter.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+-import 'package:school_office_management/features/reports/presentation/widgets/report_menu_tile.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/repositories/report_repository.dart';
++import 'unified_report_category_screen.dart';
+ 
+ /// Screen showing Admission category reports.
+-class AdmissionReportsScreen extends StatefulWidget {
++class AdmissionReportsScreen extends StatelessWidget {
+   const AdmissionReportsScreen({
+     super.key,
+     required this.reportRepository,
+@@ -14,115 +12,12 @@ class AdmissionReportsScreen extends StatefulWidget {
+ 
+   final ReportRepository reportRepository;
+ 
+-  @override
+-  State<AdmissionReportsScreen> createState() => _AdmissionReportsScreenState();
+-}
+-
+-class _AdmissionReportsScreenState extends State<AdmissionReportsScreen> {
+-  ReportDefinition? _definition;
+-  List<ReportFilter> _appliedFilters = [];
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _loadDefinitions();
+-  }
+-
+-  Future<void> _loadDefinitions() async {
+-    final definitions = await widget.reportRepository.listAllDefinitions();
+-    setState(() {
+-      _definition = definitions.firstWhere(
+-        (d) => d.category == ReportCategory.admission,
+-        orElse: () => definitions.first,
+-      );
+-    });
+-  }
+-
+-  void _onFiltersChanged(List<ReportFilter> filters) {
+-    setState(() => _appliedFilters = filters);
+-  }
+-
+-  void _generateReport() {
+-    if (_definition == null) return;
+-    Navigator.pushNamed(
+-      context,
+-      '/reports/view',
+-      arguments: {
+-        'repository': widget.reportRepository,
+-        'definition': _definition!,
+-        'filters': _appliedFilters,
+-      },
+-    );
+-  }
+-
+-  void _applyFilter(ReportFilter filter) {
+-    _onFiltersChanged(_appliedFilters);
+-    _generateReport();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    if (_definition == null) {
+-      return const Center(child: CircularProgressIndicator());
+-    }
+-
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: Text(_definition!.title),
+-      ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            const Text(
+-              'Select a report:',
+-              style: TextStyle(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-            const SizedBox(height: 8),
+-            _buildReportList(),
+-            const SizedBox(height: 24),
+-            _buildGenerateButton(),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _buildReportList() {
+-    final reports = _definition!.filters;
+-    if (reports.isEmpty) {
+-      return const Text('No reports available.');
+-    }
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: reports.map<Widget>((ReportFilter filter) {
+-        return Padding(
+-          padding: const EdgeInsets.symmetric(vertical: 4),
+-          child: ReportMenuTile(
+-            icon: Icons.assignment_turned_in_rounded,
+-            color: Colors.teal,
+-            title: filter.name,
+-            subtitle: '',
+-            onTap: () => _applyFilter(filter),
+-          ),
+-        );
+-      }).toList(),
+-    );
+-  }
+-
+-  Widget _buildGenerateButton() {
+-    return Center(
+-      child: Padding(
+-        padding: const EdgeInsets.all(16),
+-        child: FilledButton(
+-          onPressed: _generateReport,
+-          child: const Text('Generate Report'),
+-        ),
+-      ),
++    return UnifiedReportCategoryScreen(
++      reportRepository: reportRepository,
++      category: ReportCategory.admission,
++      categoryTitle: 'Admission Reports',
+     );
+   }
+ }
+diff --git a/lib/features/reports/presentation/employee_reports_screen.dart b/lib/features/reports/presentation/employee_reports_screen.dart
+index d640c1a..b1d1546 100644
+--- a/lib/features/reports/presentation/employee_reports_screen.dart
++++ b/lib/features/reports/presentation/employee_reports_screen.dart
+@@ -1,12 +1,10 @@
+ import 'package:flutter/material.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_category.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_definition.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_filter.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+-import 'package:school_office_management/features/reports/presentation/widgets/report_menu_tile.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/repositories/report_repository.dart';
++import 'unified_report_category_screen.dart';
+ 
+ /// Screen showing Employee category reports.
+-class EmployeeReportsScreen extends StatefulWidget {
++class EmployeeReportsScreen extends StatelessWidget {
+   const EmployeeReportsScreen({
+     super.key,
+     required this.reportRepository,
+@@ -14,115 +12,12 @@ class EmployeeReportsScreen extends StatefulWidget {
+ 
+   final ReportRepository reportRepository;
+ 
+-  @override
+-  State<EmployeeReportsScreen> createState() => _EmployeeReportsScreenState();
+-}
+-
+-class _EmployeeReportsScreenState extends State<EmployeeReportsScreen> {
+-  ReportDefinition? _definition;
+-  List<ReportFilter> _appliedFilters = [];
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _loadDefinitions();
+-  }
+-
+-  Future<void> _loadDefinitions() async {
+-    final definitions = await widget.reportRepository.listAllDefinitions();
+-    setState(() {
+-      _definition = definitions.firstWhere(
+-        (d) => d.category == ReportCategory.employee,
+-        orElse: () => definitions.first,
+-      );
+-    });
+-  }
+-
+-  void _onFiltersChanged(List<ReportFilter> filters) {
+-    setState(() => _appliedFilters = filters);
+-  }
+-
+-  void _generateReport() {
+-    if (_definition == null) return;
+-    Navigator.pushNamed(
+-      context,
+-      '/reports/view',
+-      arguments: {
+-        'repository': widget.reportRepository,
+-        'definition': _definition!,
+-        'filters': _appliedFilters,
+-      },
+-    );
+-  }
+-
+-  void _applyFilter(ReportFilter filter) {
+-    _onFiltersChanged(_appliedFilters);
+-    _generateReport();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    if (_definition == null) {
+-      return const Center(child: CircularProgressIndicator());
+-    }
+-
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: Text(_definition!.title),
+-      ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            const Text(
+-              'Select a report:',
+-              style: TextStyle(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-            const SizedBox(height: 8),
+-            _buildReportList(),
+-            const SizedBox(height: 24),
+-            _buildGenerateButton(),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _buildReportList() {
+-    final reports = _definition!.filters;
+-    if (reports.isEmpty) {
+-      return const Text('No reports available.');
+-    }
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: reports.map<Widget>((ReportFilter filter) {
+-        return Padding(
+-          padding: const EdgeInsets.symmetric(vertical: 4),
+-          child: ReportMenuTile(
+-            icon: Icons.badge_rounded,
+-            color: Colors.purple,
+-            title: filter.name,
+-            subtitle: '',
+-            onTap: () => _applyFilter(filter),
+-          ),
+-        );
+-      }).toList(),
+-    );
+-  }
+-
+-  Widget _buildGenerateButton() {
+-    return Center(
+-      child: Padding(
+-        padding: const EdgeInsets.all(16),
+-        child: FilledButton(
+-          onPressed: _generateReport,
+-          child: const Text('Generate Report'),
+-        ),
+-      ),
++    return UnifiedReportCategoryScreen(
++      reportRepository: reportRepository,
++      category: ReportCategory.employee,
++      categoryTitle: 'Staff Reports',
+     );
+   }
+ }
+diff --git a/lib/features/reports/presentation/expense_reports_screen.dart b/lib/features/reports/presentation/expense_reports_screen.dart
+index d5d1ce5..3cbee0e 100644
+--- a/lib/features/reports/presentation/expense_reports_screen.dart
++++ b/lib/features/reports/presentation/expense_reports_screen.dart
+@@ -1,12 +1,10 @@
+ import 'package:flutter/material.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_category.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_definition.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_filter.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+-import 'package:school_office_management/features/reports/presentation/widgets/report_menu_tile.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/repositories/report_repository.dart';
++import 'unified_report_category_screen.dart';
+ 
+-/// Screen showing Expense category reports.
+-class ExpenseReportsScreen extends StatefulWidget {
++/// Screen showing Expense category reports in the Reports module.
++class ExpenseReportsScreen extends StatelessWidget {
+   const ExpenseReportsScreen({
+     super.key,
+     required this.reportRepository,
+@@ -14,115 +12,12 @@ class ExpenseReportsScreen extends StatefulWidget {
+ 
+   final ReportRepository reportRepository;
+ 
+-  @override
+-  State<ExpenseReportsScreen> createState() => _ExpenseReportsScreenState();
+-}
+-
+-class _ExpenseReportsScreenState extends State<ExpenseReportsScreen> {
+-  ReportDefinition? _definition;
+-  List<ReportFilter> _appliedFilters = [];
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _loadDefinitions();
+-  }
+-
+-  Future<void> _loadDefinitions() async {
+-    final definitions = await widget.reportRepository.listAllDefinitions();
+-    setState(() {
+-      _definition = definitions.firstWhere(
+-        (d) => d.category == ReportCategory.expense,
+-        orElse: () => definitions.first,
+-      );
+-    });
+-  }
+-
+-  void _onFiltersChanged(List<ReportFilter> filters) {
+-    setState(() => _appliedFilters = filters);
+-  }
+-
+-  void _generateReport() {
+-    if (_definition == null) return;
+-    Navigator.pushNamed(
+-      context,
+-      '/reports/view',
+-      arguments: {
+-        'repository': widget.reportRepository,
+-        'definition': _definition!,
+-        'filters': _appliedFilters,
+-      },
+-    );
+-  }
+-
+-  void _applyFilter(ReportFilter filter) {
+-    _onFiltersChanged(_appliedFilters);
+-    _generateReport();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    if (_definition == null) {
+-      return const Center(child: CircularProgressIndicator());
+-    }
+-
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: Text(_definition!.title),
+-      ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            const Text(
+-              'Select a report:',
+-              style: TextStyle(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-            const SizedBox(height: 8),
+-            _buildReportList(),
+-            const SizedBox(height: 24),
+-            _buildGenerateButton(),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _buildReportList() {
+-    final reports = _definition!.filters;
+-    if (reports.isEmpty) {
+-      return const Text('No reports available.');
+-    }
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: reports.map<Widget>((ReportFilter filter) {
+-        return Padding(
+-          padding: const EdgeInsets.symmetric(vertical: 4),
+-          child: ReportMenuTile(
+-            icon: Icons.receipt_long_rounded,
+-            color: Colors.red,
+-            title: filter.name,
+-            subtitle: '',
+-            onTap: () => _applyFilter(filter),
+-          ),
+-        );
+-      }).toList(),
+-    );
+-  }
+-
+-  Widget _buildGenerateButton() {
+-    return Center(
+-      child: Padding(
+-        padding: const EdgeInsets.all(16),
+-        child: FilledButton(
+-          onPressed: _generateReport,
+-          child: const Text('Generate Report'),
+-        ),
+-      ),
++    return UnifiedReportCategoryScreen(
++      reportRepository: reportRepository,
++      category: ReportCategory.expense,
++      categoryTitle: 'Expense Reports',
+     );
+   }
+ }
+diff --git a/lib/features/reports/presentation/fee_reports_screen.dart b/lib/features/reports/presentation/fee_reports_screen.dart
+index 31c9bd7..84aa227 100644
+--- a/lib/features/reports/presentation/fee_reports_screen.dart
++++ b/lib/features/reports/presentation/fee_reports_screen.dart
+@@ -1,12 +1,10 @@
+ import 'package:flutter/material.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_category.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_definition.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_filter.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+-import 'package:school_office_management/features/reports/presentation/widgets/report_menu_tile.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/repositories/report_repository.dart';
++import 'unified_report_category_screen.dart';
+ 
+-/// Screen showing Fee category reports.
+-class FeeReportsScreen extends StatefulWidget {
++/// Screen showing Fee category reports in the Reports module.
++class FeeReportsScreen extends StatelessWidget {
+   const FeeReportsScreen({
+     super.key,
+     required this.reportRepository,
+@@ -14,115 +12,12 @@ class FeeReportsScreen extends StatefulWidget {
+ 
+   final ReportRepository reportRepository;
+ 
+-  @override
+-  State<FeeReportsScreen> createState() => _FeeReportsScreenState();
+-}
+-
+-class _FeeReportsScreenState extends State<FeeReportsScreen> {
+-  ReportDefinition? _definition;
+-  List<ReportFilter> _appliedFilters = [];
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _loadDefinitions();
+-  }
+-
+-  Future<void> _loadDefinitions() async {
+-    final definitions = await widget.reportRepository.listAllDefinitions();
+-    setState(() {
+-      _definition = definitions.firstWhere(
+-        (d) => d.category == ReportCategory.fee,
+-        orElse: () => definitions.first,
+-      );
+-    });
+-  }
+-
+-  void _onFiltersChanged(List<ReportFilter> filters) {
+-    setState(() => _appliedFilters = filters);
+-  }
+-
+-  void _generateReport() {
+-    if (_definition == null) return;
+-    Navigator.pushNamed(
+-      context,
+-      '/reports/view',
+-      arguments: {
+-        'repository': widget.reportRepository,
+-        'definition': _definition!,
+-        'filters': _appliedFilters,
+-      },
+-    );
+-  }
+-
+-  void _applyFilter(ReportFilter filter) {
+-    _onFiltersChanged(_appliedFilters);
+-    _generateReport();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    if (_definition == null) {
+-      return const Center(child: CircularProgressIndicator());
+-    }
+-
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: Text(_definition!.title),
+-      ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            const Text(
+-              'Select a report:',
+-              style: TextStyle(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-            const SizedBox(height: 8),
+-            _buildReportList(),
+-            const SizedBox(height: 24),
+-            _buildGenerateButton(),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _buildReportList() {
+-    final reports = _definition!.filters;
+-    if (reports.isEmpty) {
+-      return const Text('No reports available.');
+-    }
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: reports.map<Widget>((ReportFilter filter) {
+-        return Padding(
+-          padding: const EdgeInsets.symmetric(vertical: 4),
+-          child: ReportMenuTile(
+-            icon: Icons.payments_rounded,
+-            color: Colors.green,
+-            title: filter.name,
+-            subtitle: '',
+-            onTap: () => _applyFilter(filter),
+-          ),
+-        );
+-      }).toList(),
+-    );
+-  }
+-
+-  Widget _buildGenerateButton() {
+-    return Center(
+-      child: Padding(
+-        padding: const EdgeInsets.all(16),
+-        child: FilledButton(
+-          onPressed: _generateReport,
+-          child: const Text('Generate Report'),
+-        ),
+-      ),
++    return UnifiedReportCategoryScreen(
++      reportRepository: reportRepository,
++      category: ReportCategory.fee,
++      categoryTitle: 'Fee Reports',
+     );
+   }
+ }
+diff --git a/lib/features/reports/presentation/financial_reports_screen.dart b/lib/features/reports/presentation/financial_reports_screen.dart
+index 1a0dc04..3179c71 100644
+--- a/lib/features/reports/presentation/financial_reports_screen.dart
++++ b/lib/features/reports/presentation/financial_reports_screen.dart
+@@ -1,12 +1,10 @@
+ import 'package:flutter/material.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_category.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_definition.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_filter.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+-import 'package:school_office_management/features/reports/presentation/widgets/report_menu_tile.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/repositories/report_repository.dart';
++import 'unified_report_category_screen.dart';
+ 
+ /// Screen showing Financial category reports.
+-class FinancialReportsScreen extends StatefulWidget {
++class FinancialReportsScreen extends StatelessWidget {
+   const FinancialReportsScreen({
+     super.key,
+     required this.reportRepository,
+@@ -14,115 +12,12 @@ class FinancialReportsScreen extends StatefulWidget {
+ 
+   final ReportRepository reportRepository;
+ 
+-  @override
+-  State<FinancialReportsScreen> createState() => _FinancialReportsScreenState();
+-}
+-
+-class _FinancialReportsScreenState extends State<FinancialReportsScreen> {
+-  ReportDefinition? _definition;
+-  List<ReportFilter> _appliedFilters = [];
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _loadDefinitions();
+-  }
+-
+-  Future<void> _loadDefinitions() async {
+-    final definitions = await widget.reportRepository.listAllDefinitions();
+-    setState(() {
+-      _definition = definitions.firstWhere(
+-        (d) => d.category == ReportCategory.financial,
+-        orElse: () => definitions.first,
+-      );
+-    });
+-  }
+-
+-  void _onFiltersChanged(List<ReportFilter> filters) {
+-    setState(() => _appliedFilters = filters);
+-  }
+-
+-  void _generateReport() {
+-    if (_definition == null) return;
+-    Navigator.pushNamed(
+-      context,
+-      '/reports/view',
+-      arguments: {
+-        'repository': widget.reportRepository,
+-        'definition': _definition!,
+-        'filters': _appliedFilters,
+-      },
+-    );
+-  }
+-
+-  void _applyFilter(ReportFilter filter) {
+-    _onFiltersChanged(_appliedFilters);
+-    _generateReport();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    if (_definition == null) {
+-      return const Center(child: CircularProgressIndicator());
+-    }
+-
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: Text(_definition!.title),
+-      ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            const Text(
+-              'Select a report:',
+-              style: TextStyle(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-            const SizedBox(height: 8),
+-            _buildReportList(),
+-            const SizedBox(height: 24),
+-            _buildGenerateButton(),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _buildReportList() {
+-    final reports = _definition!.filters;
+-    if (reports.isEmpty) {
+-      return const Text('No reports available.');
+-    }
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: reports.map<Widget>((ReportFilter filter) {
+-        return Padding(
+-          padding: const EdgeInsets.symmetric(vertical: 4),
+-          child: ReportMenuTile(
+-            icon: Icons.analytics_rounded,
+-            color: Colors.blue,
+-            title: filter.name,
+-            subtitle: '',
+-            onTap: () => _applyFilter(filter),
+-          ),
+-        );
+-      }).toList(),
+-    );
+-  }
+-
+-  Widget _buildGenerateButton() {
+-    return Center(
+-      child: Padding(
+-        padding: const EdgeInsets.all(16),
+-        child: FilledButton(
+-          onPressed: _generateReport,
+-          child: const Text('Generate Report'),
+-        ),
+-      ),
++    return UnifiedReportCategoryScreen(
++      reportRepository: reportRepository,
++      category: ReportCategory.financial,
++      categoryTitle: 'Financial Reports',
+     );
+   }
+ }
+diff --git a/lib/features/reports/presentation/salary_reports_screen.dart b/lib/features/reports/presentation/salary_reports_screen.dart
+index fd877a4..27f9312 100644
+--- a/lib/features/reports/presentation/salary_reports_screen.dart
++++ b/lib/features/reports/presentation/salary_reports_screen.dart
+@@ -1,12 +1,10 @@
+ import 'package:flutter/material.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_category.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_definition.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_filter.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+-import 'package:school_office_management/features/reports/presentation/widgets/report_menu_tile.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/repositories/report_repository.dart';
++import 'unified_report_category_screen.dart';
+ 
+ /// Screen showing Salary category reports.
+-class SalaryReportsScreen extends StatefulWidget {
++class SalaryReportsScreen extends StatelessWidget {
+   const SalaryReportsScreen({
+     super.key,
+     required this.reportRepository,
+@@ -14,115 +12,12 @@ class SalaryReportsScreen extends StatefulWidget {
+ 
+   final ReportRepository reportRepository;
+ 
+-  @override
+-  State<SalaryReportsScreen> createState() => _SalaryReportsScreenState();
+-}
+-
+-class _SalaryReportsScreenState extends State<SalaryReportsScreen> {
+-  ReportDefinition? _definition;
+-  List<ReportFilter> _appliedFilters = [];
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _loadDefinitions();
+-  }
+-
+-  Future<void> _loadDefinitions() async {
+-    final definitions = await widget.reportRepository.listAllDefinitions();
+-    setState(() {
+-      _definition = definitions.firstWhere(
+-        (d) => d.category == ReportCategory.salary,
+-        orElse: () => definitions.first,
+-      );
+-    });
+-  }
+-
+-  void _onFiltersChanged(List<ReportFilter> filters) {
+-    setState(() => _appliedFilters = filters);
+-  }
+-
+-  void _generateReport() {
+-    if (_definition == null) return;
+-    Navigator.pushNamed(
+-      context,
+-      '/reports/view',
+-      arguments: {
+-        'repository': widget.reportRepository,
+-        'definition': _definition!,
+-        'filters': _appliedFilters,
+-      },
+-    );
+-  }
+-
+-  void _applyFilter(ReportFilter filter) {
+-    _onFiltersChanged(_appliedFilters);
+-    _generateReport();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    if (_definition == null) {
+-      return const Center(child: CircularProgressIndicator());
+-    }
+-
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: Text(_definition!.title),
+-      ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            const Text(
+-              'Select a report:',
+-              style: TextStyle(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-            const SizedBox(height: 8),
+-            _buildReportList(),
+-            const SizedBox(height: 24),
+-            _buildGenerateButton(),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _buildReportList() {
+-    final reports = _definition!.filters;
+-    if (reports.isEmpty) {
+-      return const Text('No reports available.');
+-    }
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: reports.map<Widget>((ReportFilter filter) {
+-        return Padding(
+-          padding: const EdgeInsets.symmetric(vertical: 4),
+-          child: ReportMenuTile(
+-            icon: Icons.monetization_on_rounded,
+-            color: Colors.deepOrange,
+-            title: filter.name,
+-            subtitle: '',
+-            onTap: () => _applyFilter(filter),
+-          ),
+-        );
+-      }).toList(),
+-    );
+-  }
+-
+-  Widget _buildGenerateButton() {
+-    return Center(
+-      child: Padding(
+-        padding: const EdgeInsets.all(16),
+-        child: FilledButton(
+-          onPressed: _generateReport,
+-          child: const Text('Generate Report'),
+-        ),
+-      ),
++    return UnifiedReportCategoryScreen(
++      reportRepository: reportRepository,
++      category: ReportCategory.salary,
++      categoryTitle: 'Salary Reports',
+     );
+   }
+ }
+diff --git a/lib/features/reports/presentation/student_reports_screen.dart b/lib/features/reports/presentation/student_reports_screen.dart
+index d084d45..44631e3 100644
+--- a/lib/features/reports/presentation/student_reports_screen.dart
++++ b/lib/features/reports/presentation/student_reports_screen.dart
+@@ -1,12 +1,10 @@
+ import 'package:flutter/material.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_category.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_definition.dart';
+-import 'package:school_office_management/features/reports/domain/entities/report_filter.dart';
+-import 'package:school_office_management/features/reports/domain/repositories/report_repository.dart';
+-import 'package:school_office_management/features/reports/presentation/widgets/report_menu_tile.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/repositories/report_repository.dart';
++import 'unified_report_category_screen.dart';
+ 
+-/// Screen showing Student category reports.
+-class StudentReportsScreen extends StatefulWidget {
++/// Screen showing Student category reports (delegates to UnifiedReportCategoryScreen).
++class StudentReportsScreen extends StatelessWidget {
+   const StudentReportsScreen({
+     super.key,
+     required this.reportRepository,
+@@ -14,142 +12,12 @@ class StudentReportsScreen extends StatefulWidget {
+ 
+   final ReportRepository reportRepository;
+ 
+-  @override
+-  State<StudentReportsScreen> createState() => _StudentReportsScreenState();
+-}
+-
+-class _StudentReportsScreenState extends State<StudentReportsScreen> {
+-  ReportDefinition? _definition;
+-  List<ReportFilter> _appliedFilters = [];
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _loadDefinitions();
+-  }
+-
+-  Future<void> _loadDefinitions() async {
+-    final definitions = await widget.reportRepository.listAllDefinitions();
+-    setState(() {
+-      _definition = definitions.firstWhere(
+-        (d) => d.category == ReportCategory.student,
+-        orElse: () => definitions.first,
+-      );
+-    });
+-  }
+-
+-  void _onFiltersChanged(List<ReportFilter> filters) {
+-    setState(() => _appliedFilters = filters);
+-  }
+-
+-  void _generateReport() {
+-    if (_definition == null) return;
+-    Navigator.pushNamed(
+-      context,
+-      '/reports/view',
+-      arguments: {
+-        'repository': widget.reportRepository,
+-        'definition': _definition!,
+-        'filters': _appliedFilters,
+-      },
+-    );
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    if (_definition == null) {
+-      return const Center(child: CircularProgressIndicator());
+-    }
+-
+-    return Scaffold(
+-      appBar: AppBar(
+-        title: Text(_definition!.title),
+-      ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            const Text(
+-              'Select a report:',
+-              style: TextStyle(
+-                fontSize: 16,
+-                fontWeight: FontWeight.w600,
+-              ),
+-            ),
+-            const SizedBox(height: 8),
+-            _buildReportList(),
+-            const SizedBox(height: 24),
+-            _buildGenerateButton(),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  Widget _buildReportList() {
+-    final reports = _definition!.filters;
+-    if (reports.isEmpty) {
+-      return const Text('No reports available.');
+-    }
+-    return Column(
+-      crossAxisAlignment: CrossAxisAlignment.start,
+-      children: reports.map<Widget>((ReportFilter filter) {
+-        return Padding(
+-          padding: const EdgeInsets.symmetric(vertical: 4),
+-          child: ReportMenuTile(
+-            icon: _getIconForFilter(filter),
+-            color: _getColorForFilter(filter),
+-            title: filter.name,
+-            subtitle: '',
+-            onTap: () => _applyFilter(filter),
+-          ),
+-        );
+-      }).toList(),
+-    );
+-  }
+-
+-  IconData _getIconForFilter(ReportFilter filter) {
+-    switch (filter.type) {
+-      case 'status':
+-        return Icons.person;
+-      case 'class-section':
+-        return Icons.class_;
+-      case 'date':
+-        return Icons.calendar_today;
+-      case 'date-range':
+-        return Icons.date_range;
+-      case 'month':
+-        return Icons.calendar_month;
+-      case 'year':
+-        return Icons.event;
+-      case 'category':
+-        return Icons.category;
+-      case 'entity':
+-        return Icons.business;
+-      default:
+-        return Icons.insert_chart;
+-    }
+-  }
+-
+-  Color _getColorForFilter(ReportFilter filter) {
+-    return Colors.indigo;
+-  }
+-
+-  void _applyFilter(ReportFilter filter) {
+-    _onFiltersChanged(_appliedFilters);
+-    _generateReport();
+-  }
+-
+-  Widget _buildGenerateButton() {
+-    return Center(
+-      child: Padding(
+-        padding: const EdgeInsets.all(16),
+-        child: FilledButton(
+-          onPressed: _generateReport,
+-          child: const Text('Generate Report'),
+-        ),
+-      ),
++    return UnifiedReportCategoryScreen(
++      reportRepository: reportRepository,
++      category: ReportCategory.student,
++      categoryTitle: 'Student Reports',
+     );
+   }
+ }
+diff --git a/lib/features/reports/presentation/unified_report_category_screen.dart b/lib/features/reports/presentation/unified_report_category_screen.dart
+new file mode 100644
+index 0000000..c723c2e
+--- /dev/null
++++ b/lib/features/reports/presentation/unified_report_category_screen.dart
+@@ -0,0 +1,175 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++import '../domain/entities/report_category.dart';
++import '../domain/entities/report_definition.dart';
++import '../domain/entities/report_filter.dart';
++import '../domain/repositories/report_repository.dart';
++import 'widgets/report_menu_tile.dart';
++
++/// Reusable generic category reports screen replacing the 7 repetitive copies.
++class UnifiedReportCategoryScreen extends StatefulWidget {
++  const UnifiedReportCategoryScreen({
++    super.key,
++    required this.reportRepository,
++    required this.category,
++    required this.categoryTitle,
++  });
++
++  final ReportRepository reportRepository;
++  final ReportCategory category;
++  final String categoryTitle;
++
++  @override
++  State<UnifiedReportCategoryScreen> createState() => _UnifiedReportCategoryScreenState();
++}
++
++class _UnifiedReportCategoryScreenState extends State<UnifiedReportCategoryScreen> {
++  ReportDefinition? _definition;
++  List<ReportFilter> _appliedFilters = [];
++  bool _isLoading = true;
++
++  @override
++  void initState() {
++    super.initState();
++    _loadDefinitions();
++  }
++
++  Future<void> _loadDefinitions() async {
++    final definitions = await widget.reportRepository.listAllDefinitions();
++    if (!mounted) return;
++    setState(() {
++      _definition = definitions.firstWhere(
++        (d) => d.category == widget.category,
++        orElse: () => definitions.first,
++      );
++      _isLoading = false;
++    });
++  }
++
++  void _onFiltersChanged(List<ReportFilter> filters) {
++    setState(() => _appliedFilters = filters);
++  }
++
++  void _generateReport() {
++    if (_definition == null) return;
++    Navigator.pushNamed(
++      context,
++      '/reports/view',
++      arguments: {
++        'repository': widget.reportRepository,
++        'definition': _definition!,
++        'filters': _appliedFilters,
++      },
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    if (_isLoading) {
++      return Scaffold(
++        appBar: AppBar(title: Text(widget.categoryTitle)),
++        body: const Center(child: CircularProgressIndicator()),
++      );
++    }
++
++    if (_definition == null) {
++      return Scaffold(
++        appBar: AppBar(title: Text(widget.categoryTitle)),
++        body: const Center(child: Text('No reports found for this category.')),
++      );
++    }
++
++    return Scaffold(
++      appBar: AppBar(
++        title: Text(widget.categoryTitle),
++      ),
++      body: SingleChildScrollView(
++        padding: const EdgeInsets.all(24),
++        child: Center(
++          child: ConstrainedBox(
++            constraints: const BoxConstraints(maxWidth: 800),
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Text(
++                  'Available ${widget.categoryTitle} Reports',
++                  style: const TextStyle(
++                    fontSize: 18,
++                    fontWeight: FontWeight.bold,
++                    color: Color(0xFF0F172A),
++                  ),
++                ),
++                const SizedBox(height: 6),
++                const Text(
++                  'Select a report below to apply filters and generate formatted summary or details.',
++                  style: TextStyle(fontSize: 14, color: AppTheme.secondarySlate),
++                ),
++                const SizedBox(height: 20),
++                _buildReportList(),
++                const SizedBox(height: 24),
++                Center(
++                  child: FilledButton.icon(
++                    onPressed: _generateReport,
++                    icon: const Icon(Icons.analytics_outlined),
++                    label: const Text('Generate Report'),
++                  ),
++                ),
++              ],
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++
++  Widget _buildReportList() {
++    final reports = _definition!.filters;
++    if (reports.isEmpty) {
++      return const Text('No reports configured.');
++    }
++    return Card(
++      child: ListView.separated(
++        shrinkWrap: true,
++        physics: const NeverScrollableScrollPhysics(),
++        itemCount: reports.length,
++        separatorBuilder: (_, __) => const Divider(height: 1),
++        itemBuilder: (context, index) {
++          final filter = reports[index];
++          return ReportMenuTile(
++            icon: _getIconForFilter(filter),
++            color: AppTheme.primaryNavy,
++            title: filter.name,
++            subtitle: 'Click to configure and view report',
++            onTap: () {
++              _onFiltersChanged([filter]);
++              _generateReport();
++            },
++          );
++        },
++      ),
++    );
++  }
++
++  IconData _getIconForFilter(ReportFilter filter) {
++    switch (filter.type) {
++      case 'status':
++        return Icons.person_outline;
++      case 'class-section':
++        return Icons.class_outlined;
++      case 'date':
++        return Icons.calendar_today_outlined;
++      case 'date-range':
++        return Icons.date_range_outlined;
++      case 'month':
++        return Icons.calendar_month_outlined;
++      case 'year':
++        return Icons.event_outlined;
++      case 'category':
++        return Icons.category_outlined;
++      case 'entity':
++        return Icons.business_outlined;
++      default:
++        return Icons.insert_chart_outlined;
++    }
++  }
++}
+diff --git a/lib/features/salary/presentation/salary_screen.dart b/lib/features/salary/presentation/salary_screen.dart
+index dcbece3..08943ed 100644
+--- a/lib/features/salary/presentation/salary_screen.dart
++++ b/lib/features/salary/presentation/salary_screen.dart
+@@ -1,124 +1,62 @@
+ import 'package:flutter/material.dart';
+ 
++import '../../shared/theme/app_theme.dart';
+ import '../domain/services/salary_service.dart';
+ import 'salary_form_screen.dart';
+ import 'salary_records_screen.dart';
+ 
+-/// Module 9 hub. Reached from the dashboard "Salaries" quick action and routes
+-/// to the salary records and monthly totals features.
+-class SalaryScreen extends StatelessWidget {
+-  const SalaryScreen({super.key, required this.salaryService});
++/// Modern Salary Management Hub with integrated tab navigation.
++class SalaryScreen extends StatefulWidget {
++  const SalaryScreen({super.key, required this.salaryService, this.initialTabIndex = 0});
+ 
+   final SalaryService salaryService;
++  final int initialTabIndex;
+ 
+-  Future<void> _push(BuildContext context, Widget screen) {
+-    return Navigator.of(context).push(
+-      MaterialPageRoute<void>(builder: (_) => screen),
+-    );
+-  }
++  @override
++  State<SalaryScreen> createState() => _SalaryScreenState();
++}
+ 
+-  Future<void> _record(BuildContext context) async {
+-    await Navigator.of(context).push(
+-      MaterialPageRoute<void>(
+-        builder: (_) => SalaryFormScreen(salaryService: salaryService),
+-      ),
+-    );
+-    salaryService.refresh();
+-  }
++class _SalaryScreenState extends State<SalaryScreen> with SingleTickerProviderStateMixin {
++  late final TabController _tabController;
+ 
+   @override
+-  Widget build(BuildContext context) {
+-    return Scaffold(
+-      appBar: AppBar(title: const Text('Salary Management')),
+-      body: ListView(
+-        padding: const EdgeInsets.all(16),
+-        children: [
+-          _SalaryMenuTile(
+-            key: const Key('salary_menu_records'),
+-            icon: Icons.payments_rounded,
+-            color: Colors.indigo,
+-            title: 'Salary Records',
+-            subtitle: 'Search and review monthly salaries by employee, month '
+-                'or status.',
+-            onTap: () => _push(
+-              context,
+-              SalaryRecordsScreen(salaryService: salaryService),
+-            ),
+-          ),
+-          _SalaryMenuTile(
+-            key: const Key('salary_menu_record_salary'),
+-            icon: Icons.add_card_rounded,
+-            color: Colors.green,
+-            title: 'Record Salary',
+-            subtitle:
+-                'Create a monthly salary record for a staff member.',
+-            onTap: () => _record(context),
+-          ),
+-        ],
+-      ),
++  void initState() {
++    super.initState();
++    _tabController = TabController(
++      length: 2,
++      vsync: this,
++      initialIndex: widget.initialTabIndex,
+     );
+   }
+-}
+ 
+-class _SalaryMenuTile extends StatelessWidget {
+-  const _SalaryMenuTile({
+-    super.key,
+-    required this.icon,
+-    required this.color,
+-    required this.title,
+-    required this.subtitle,
+-    required this.onTap,
+-  });
+-
+-  final IconData icon;
+-  final Color color;
+-  final String title;
+-  final String subtitle;
+-  final VoidCallback onTap;
++  @override
++  void dispose() {
++    _tabController.dispose();
++    super.dispose();
++  }
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final theme = Theme.of(context);
+-    return Card(
+-      margin: const EdgeInsets.only(bottom: 12),
+-      child: InkWell(
+-        borderRadius: BorderRadius.circular(12),
+-        onTap: onTap,
+-        child: Padding(
+-          padding: const EdgeInsets.all(16),
+-          child: Row(
+-            children: [
+-              CircleAvatar(
+-                radius: 22,
+-                backgroundColor: color.withValues(alpha: 0.12),
+-                child: Icon(icon, color: color),
+-              ),
+-              const SizedBox(width: 16),
+-              Expanded(
+-                child: Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  children: [
+-                    Text(
+-                      title,
+-                      style: theme.textTheme.titleMedium?.copyWith(
+-                        fontWeight: FontWeight.bold,
+-                      ),
+-                    ),
+-                    const SizedBox(height: 2),
+-                    Text(
+-                      subtitle,
+-                      style: theme.textTheme.bodySmall?.copyWith(
+-                        color: theme.colorScheme.outline,
+-                      ),
+-                    ),
+-                  ],
+-                ),
+-              ),
+-              Icon(Icons.chevron_right, color: theme.colorScheme.outline),
+-            ],
+-          ),
++    return Scaffold(
++      appBar: AppBar(
++        title: const Text('Salary Management'),
++        bottom: TabBar(
++          controller: _tabController,
++          labelColor: AppTheme.primaryNavy,
++          indicatorColor: AppTheme.primaryNavy,
++          tabs: const [
++            Tab(icon: Icon(Icons.receipt_long_outlined), text: 'Salary Records'),
++            Tab(icon: Icon(Icons.add_card_outlined), text: 'Record Salary'),
++          ],
+         ),
+       ),
++      body: TabBarView(
++        controller: _tabController,
++        children: [
++          SalaryRecordsScreen(salaryService: widget.salaryService),
++          SalaryFormScreen(salaryService: widget.salaryService),
++        ],
++      ),
+     );
+   }
+ }
+diff --git a/lib/features/student/presentation/student_form_screen.dart b/lib/features/student/presentation/student_form_screen.dart
+index 58ef19b..edfc8a2 100644
+--- a/lib/features/student/presentation/student_form_screen.dart
++++ b/lib/features/student/presentation/student_form_screen.dart
+@@ -401,7 +401,7 @@ class _StudentFormScreenState extends State<StudentFormScreen> {
+         child: SingleChildScrollView(
+           padding: const EdgeInsets.all(24),
+           child: ConstrainedBox(
+-            constraints: const BoxConstraints(maxWidth: 720),
++            constraints: const BoxConstraints(maxWidth: 920),
+             child: Card(
+               margin: EdgeInsets.zero,
+               child: Padding(
+diff --git a/lib/features/student/presentation/student_list_screen.dart b/lib/features/student/presentation/student_list_screen.dart
+index 62e464b..8e75ead 100644
+--- a/lib/features/student/presentation/student_list_screen.dart
++++ b/lib/features/student/presentation/student_list_screen.dart
+@@ -1,14 +1,22 @@
+ import 'package:flutter/material.dart';
+ 
++import '../../core/config/app_config.dart';
+ import '../../family/domain/services/family_service.dart';
+ import '../../settings/domain/services/settings_service.dart';
++import '../../shared/theme/app_breakpoints.dart';
++import '../../shared/theme/app_theme.dart';
++import '../../shared/widgets/app_data_table.dart';
++import '../../shared/widgets/app_empty_state.dart';
++import '../../shared/widgets/app_error_state.dart';
++import '../../shared/widgets/app_page_header.dart';
++import '../../shared/widgets/app_status_chip.dart';
+ import '../domain/entities/student.dart';
+ import '../domain/services/student_service.dart';
+ import 'student_details_screen.dart';
+ import 'student_form_screen.dart';
+ import 'widgets/student_card.dart';
+ 
+-/// Student list + fast search with class/section/status filters.
++/// Modern Student list + responsive data table with fast search and class/section/status filters.
+ class StudentListScreen extends StatefulWidget {
+   const StudentListScreen({
+     super.key,
+@@ -26,12 +34,21 @@ class StudentListScreen extends StatefulWidget {
+ }
+ 
+ class _StudentListScreenState extends State<StudentListScreen> {
++  final TextEditingController _searchController = TextEditingController();
++
+   @override
+   void initState() {
+     super.initState();
++    _searchController.text = widget.studentService.query;
+     widget.studentService.search(widget.studentService.query);
+   }
+ 
++  @override
++  void dispose() {
++    _searchController.dispose();
++    super.dispose();
++  }
++
+   Future<void> _openCreate() async {
+     await Navigator.of(context).push(
+       MaterialPageRoute<void>(
+@@ -61,48 +78,74 @@ class _StudentListScreenState extends State<StudentListScreen> {
+ 
+   @override
+   Widget build(BuildContext context) {
++    final isDesktop = AppBreakpoints.isDesktop(context);
++
+     return Scaffold(
+-      appBar: AppBar(title: const Text('Student Management')),
+-      floatingActionButton: FloatingActionButton.extended(
+-        key: const Key('student_add_fab'),
+-        onPressed: _openCreate,
+-        icon: const Icon(Icons.add),
+-        label: const Text('Add Student'),
+-      ),
++      floatingActionButton: isDesktop
++          ? null
++          : FloatingActionButton.extended(
++              key: const Key('student_add_fab'),
++              onPressed: _openCreate,
++              icon: const Icon(Icons.add),
++              label: const Text('Add Student'),
++            ),
+       body: ListenableBuilder(
+         listenable: widget.studentService,
+         builder: (context, _) {
+           final service = widget.studentService;
++
+           return Column(
++            crossAxisAlignment: CrossAxisAlignment.stretch,
+             children: [
+-              Padding(
+-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+-                child: TextField(
+-                  key: const Key('student_search_field'),
+-                  onChanged: (value) => service.search(value),
+-                  decoration: const InputDecoration(
+-                    prefixIcon: Icon(Icons.search),
+-                    hintText:
+-                        'Search by Student ID, name, admission no., family, '
+-                        'guardian or phone…',
+-                    border: OutlineInputBorder(),
+-                    isDense: true,
++              AppPageHeader(
++                title: 'Student Directory',
++                subtitle: '${service.results.length} students enrolled and tracked in records',
++                actions: [
++                  FilledButton.icon(
++                    key: const Key('student_add_desktop_btn'),
++                    onPressed: _openCreate,
++                    icon: const Icon(Icons.add_rounded, size: 18),
++                    label: const Text('Add Student'),
+                   ),
+-                ),
++                ],
+               ),
++              // Filter Toolbar
+               Padding(
+-                padding: const EdgeInsets.symmetric(horizontal: 16),
++                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                 child: Wrap(
+-                  spacing: 8,
+-                  runSpacing: 8,
++                  spacing: 12,
++                  runSpacing: 12,
++                  crossAxisAlignment: WrapCrossAlignment.center,
+                   children: [
+                     SizedBox(
+-                      width: 170,
++                      width: 320,
++                      child: TextField(
++                        key: const Key('student_search_field'),
++                        controller: _searchController,
++                        onChanged: (value) => service.search(value),
++                        decoration: InputDecoration(
++                          hintText: 'Search by ID, name, admission no, phone…',
++                          prefixIcon: const Icon(Icons.search, size: 20),
++                          isDense: true,
++                          suffixIcon: _searchController.text.isNotEmpty
++                              ? IconButton(
++                                  icon: const Icon(Icons.clear, size: 18),
++                                  onPressed: () {
++                                    _searchController.clear();
++                                    service.search('');
++                                  },
++                                )
++                              : null,
++                        ),
++                      ),
++                    ),
++                    SizedBox(
++                      width: 160,
+                       child: _FilterDropdown<String>(
+                         key: const Key('student_status_filter'),
+                         label: 'Status',
+                         value: service.statusFilter?.dbValue,
+-                        items: {
++                        items: const {
+                           'all': 'All statuses',
+                           'active': 'Active',
+                           'left': 'Left',
+@@ -114,7 +157,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
+                       ),
+                     ),
+                     SizedBox(
+-                      width: 190,
++                      width: 170,
+                       child: _FilterDropdown<String>(
+                         key: const Key('student_class_filter'),
+                         label: 'Class',
+@@ -129,7 +172,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
+                       ),
+                     ),
+                     SizedBox(
+-                      width: 190,
++                      width: 170,
+                       child: _FilterDropdown<String>(
+                         key: const Key('student_section_filter'),
+                         label: 'Section',
+@@ -146,8 +189,8 @@ class _StudentListScreenState extends State<StudentListScreen> {
+                   ],
+                 ),
+               ),
+-              const SizedBox(height: 8),
+-              Expanded(child: _buildContent(service)),
++              const SizedBox(height: 12),
++              Expanded(child: _buildBody(context, service, isDesktop)),
+             ],
+           );
+         },
+@@ -155,64 +198,94 @@ class _StudentListScreenState extends State<StudentListScreen> {
+     );
+   }
+ 
+-  Widget _buildContent(StudentService service) {
+-    final theme = Theme.of(context);
++  Widget _buildBody(BuildContext context, StudentService service, bool isDesktop) {
+     if (service.isLoading && service.results.isEmpty) {
+       return const Center(child: CircularProgressIndicator());
+     }
++
+     if (service.error != null) {
+-      return Center(
+-        child: Padding(
+-          padding: const EdgeInsets.all(24),
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              Text(
+-                'Students could not be loaded.',
+-                style: theme.textTheme.titleMedium,
+-              ),
+-              const SizedBox(height: 12),
+-              FilledButton.icon(
+-                onPressed: service.refresh,
+-                icon: const Icon(Icons.refresh),
+-                label: const Text('Retry'),
+-              ),
+-            ],
+-          ),
+-        ),
++      return AppErrorState(
++        title: 'Could not load students',
++        message: service.error!,
++        onRetry: service.refresh,
+       );
+     }
++
+     if (service.results.isEmpty) {
+-      return Center(
+-        child: Padding(
+-          padding: const EdgeInsets.all(24),
+-          child: Column(
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              Icon(
+-                Icons.school_rounded,
+-                size: 48,
+-                color: theme.colorScheme.outline,
+-              ),
+-              const SizedBox(height: 12),
+-              Text('No students found.', style: theme.textTheme.titleMedium),
+-              const SizedBox(height: 4),
+-              Text(
+-                'Try a different search, or use "Add Student" to register one.',
+-                textAlign: TextAlign.center,
+-                style: theme.textTheme.bodySmall?.copyWith(
+-                  color: theme.colorScheme.outline,
++      return AppEmptyState(
++        title: 'No students found',
++        message: 'Try changing your search terms or filters, or add a new student.',
++        actionLabel: 'Add Student',
++        onAction: _openCreate,
++      );
++    }
++
++    // Responsive Desktop Data Table
++    if (isDesktop) {
++      return Padding(
++        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
++        child: AppDataTable(
++          columns: const [
++            DataColumn(label: Text('ADMISSION NO.')),
++            DataColumn(label: Text('STUDENT NAME')),
++            DataColumn(label: Text('CLASS & SECTION')),
++            DataColumn(label: Text('GUARDIAN')),
++            DataColumn(label: Text('PHONE')),
++            DataColumn(label: Text('STATUS')),
++            DataColumn(label: Text('ACTIONS')),
++          ],
++          rows: service.results.map((item) {
++            final st = item.student;
++            return DataRow(
++              cells: [
++                DataCell(
++                  Text(
++                    st.admissionNumber,
++                    style: const TextStyle(fontWeight: FontWeight.w600),
++                  ),
+                 ),
+-              ),
+-            ],
+-          ),
++                DataCell(
++                  InkWell(
++                    onTap: () => _openDetails(st),
++                    child: Text(
++                      st.fullName,
++                      style: const TextStyle(
++                        fontWeight: FontWeight.w600,
++                        color: AppTheme.primaryNavy,
++                      ),
++                    ),
++                  ),
++                ),
++                DataCell(Text('${st.className} ${st.sectionName}'.trim())),
++                DataCell(Text(item.guardianName ?? '—')),
++                DataCell(Text(item.guardianPhone ?? '—')),
++                DataCell(
++                  AppStatusChip(
++                    label: st.status.label,
++                    isSuccess: st.status == StudentStatus.active,
++                    isWarning: st.status == StudentStatus.transferred,
++                    isDanger: st.status == StudentStatus.left,
++                  ),
++                ),
++                DataCell(
++                  IconButton(
++                    icon: const Icon(Icons.chevron_right, size: 20),
++                    tooltip: 'View Profile',
++                    onPressed: () => _openDetails(st),
++                  ),
++                ),
++              ],
++            );
++          }).toList(),
+         ),
+       );
+     }
++
++    // Mobile / Tablet Card View
+     return ListView.separated(
+       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+       itemCount: service.results.length,
+-      separatorBuilder: (_, _) => const SizedBox(height: 8),
++      separatorBuilder: (_, __) => const SizedBox(height: 8),
+       itemBuilder: (context, index) {
+         final item = service.results[index];
+         return StudentCard(item: item, onTap: () => _openDetails(item.student));
+@@ -240,7 +313,6 @@ class _FilterDropdown<T> extends StatelessWidget {
+     return InputDecorator(
+       decoration: InputDecoration(
+         labelText: label,
+-        border: const OutlineInputBorder(),
+         isDense: true,
+         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+       ),
+diff --git a/lib/shared/theme/app_breakpoints.dart b/lib/shared/theme/app_breakpoints.dart
+new file mode 100644
+index 0000000..93d68aa
+--- /dev/null
++++ b/lib/shared/theme/app_breakpoints.dart
+@@ -0,0 +1,18 @@
++import 'package:flutter/material.dart';
++
++/// Responsive screen size breakpoints.
++abstract final class AppBreakpoints {
++  static const double phone = 600;
++  static const double tablet = 1024;
++
++  static bool isPhone(BuildContext context) =>
++      MediaQuery.sizeOf(context).width < phone;
++
++  static bool isTablet(BuildContext context) {
++    final width = MediaQuery.sizeOf(context).width;
++    return width >= phone && width <= tablet;
++  }
++
++  static bool isDesktop(BuildContext context) =>
++      MediaQuery.sizeOf(context).width > tablet;
++}
+diff --git a/lib/shared/theme/app_theme.dart b/lib/shared/theme/app_theme.dart
+index 57fc4ae..8f66fba 100644
+--- a/lib/shared/theme/app_theme.dart
++++ b/lib/shared/theme/app_theme.dart
+@@ -1,36 +1,274 @@
+ import 'package:flutter/material.dart';
+ 
+-/// Central Material 3 theme for the whole application so every module looks
+-/// consistent without repeating styling decisions.
++/// Central theme configuration for the School Office Management System.
++///
++/// Provides cohesive Light and Dark themes engineered for high legibility
++/// in school office administrative environments (Windows desktop, tablet, and web).
+ abstract final class AppTheme {
+-  static const Color _seed = Color(0xFF2F5D8A); // professional school blue.
++  // Brand color palette
++  static const Color primaryNavy = Color(0xFF1E3A5F);
++  static const Color primaryAccent = Color(0xFF2F5D8A); // Original seed color preserved
++  static const Color secondarySlate = Color(0xFF475569);
+ 
++  // Surface colors - Light
++  static const Color lightScaffold = Color(0xFFF8FAFC);
++  static const Color lightSurface = Color(0xFFFFFFFF);
++  static const Color lightBorder = Color(0xFFE2E8F0);
++  static const Color lightHeader = Color(0xFFF1F5F9);
++
++  // Surface colors - Dark
++  static const Color darkScaffold = Color(0xFF0F172A);
++  static const Color darkSurface = Color(0xFF1E293B);
++  static const Color darkBorder = Color(0xFF334155);
++  static const Color darkHeader = Color(0xFF1E293B);
++
++  // Semantic status colors
++  static const Color successGreen = Color(0xFF059669);
++  static const Color successBg = Color(0xFFECFDF5);
++  static const Color warningAmber = Color(0xFFD97706);
++  static const Color warningBg = Color(0xFFFFFBEB);
++  static const Color dangerRed = Color(0xFFDC2626);
++  static const Color dangerBg = Color(0xFFFEF2F2);
++  static const Color infoSky = Color(0xFF0284C7);
++  static const Color infoBg = Color(0xFFF0F9FF);
++
++  // Border radiuses
++  static const double radiusSmall = 6.0;
++  static const double radiusMedium = 8.0;
++  static const double radiusLarge = 12.0;
++  static const double radiusSheet = 16.0;
++
++  /// Complete Light Theme Data
+   static ThemeData get light {
+-    final scheme = ColorScheme.fromSeed(seedColor: _seed);
++    final scheme = ColorScheme.fromSeed(
++      seedColor: primaryAccent,
++      brightness: Brightness.light,
++      primary: primaryNavy,
++      onPrimary: Colors.white,
++      secondary: secondarySlate,
++      surface: lightSurface,
++      onSurface: const Color(0xFF0F172A),
++    );
++
++    return ThemeData(
++      useMaterial3: true,
++      colorScheme: scheme,
++      scaffoldBackgroundColor: lightScaffold,
++      dividerColor: lightBorder,
++      cardTheme: CardThemeData(
++        color: lightSurface,
++        elevation: 0,
++        shape: RoundedRectangleBorder(
++          side: const BorderSide(color: lightBorder),
++          borderRadius: BorderRadius.circular(radiusMedium),
++        ),
++        margin: EdgeInsets.zero,
++      ),
++      appBarTheme: const AppBarTheme(
++        backgroundColor: lightSurface,
++        foregroundColor: Color(0xFF0F172A),
++        elevation: 0,
++        scrolledUnderElevation: 1,
++        centerTitle: false,
++        titleTextStyle: TextStyle(
++          fontSize: 18,
++          fontWeight: FontWeight.w600,
++          color: Color(0xFF0F172A),
++          letterSpacing: -0.2,
++        ),
++      ),
++      inputDecorationTheme: InputDecorationTheme(
++        filled: true,
++        fillColor: lightSurface,
++        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
++        border: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: lightBorder),
++        ),
++        enabledBorder: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: lightBorder),
++        ),
++        focusedBorder: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: primaryAccent, width: 1.5),
++        ),
++        errorBorder: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: dangerRed),
++        ),
++        labelStyle: const TextStyle(fontSize: 14, color: secondarySlate),
++        hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
++      ),
++      filledButtonTheme: FilledButtonThemeData(
++        style: FilledButton.styleFrom(
++          backgroundColor: primaryNavy,
++          foregroundColor: Colors.white,
++          minimumSize: const Size(0, 42),
++          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
++          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
++          shape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(radiusMedium),
++          ),
++        ),
++      ),
++      outlinedButtonTheme: OutlinedButtonThemeData(
++        style: OutlinedButton.styleFrom(
++          foregroundColor: primaryNavy,
++          side: const BorderSide(color: lightBorder),
++          minimumSize: const Size(0, 42),
++          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
++          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
++          shape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(radiusMedium),
++          ),
++        ),
++      ),
++      textButtonTheme: TextButtonThemeData(
++        style: TextButton.styleFrom(
++          foregroundColor: primaryNavy,
++          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
++          shape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(radiusMedium),
++          ),
++        ),
++      ),
++      dataTableTheme: DataTableThemeData(
++        headingRowColor: WidgetStateProperty.all(lightHeader),
++        headingTextStyle: const TextStyle(
++          fontSize: 13,
++          fontWeight: FontWeight.w700,
++          color: secondarySlate,
++          letterSpacing: 0.3,
++        ),
++        dataTextStyle: const TextStyle(
++          fontSize: 14,
++          color: Color(0xFF1E293B),
++        ),
++        dividerThickness: 1,
++        horizontalMargin: 16,
++        columnSpacing: 24,
++      ),
++      snackBarTheme: SnackBarThemeData(
++        behavior: SnackBarBehavior.floating,
++        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMedium)),
++      ),
++      dialogTheme: DialogThemeData(
++        backgroundColor: lightSurface,
++        elevation: 6,
++        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLarge)),
++      ),
++    );
++  }
++
++  /// Complete Dark Theme Data
++  static ThemeData get dark {
++    final scheme = ColorScheme.fromSeed(
++      seedColor: primaryAccent,
++      brightness: Brightness.dark,
++      primary: const Color(0xFF60A5FA),
++      surface: darkSurface,
++      onSurface: const Color(0xFFF8FAFC),
++    );
++
+     return ThemeData(
+       useMaterial3: true,
+       colorScheme: scheme,
+-      scaffoldBackgroundColor: const Color(0xFFF4F6F9),
++      scaffoldBackgroundColor: darkScaffold,
++      dividerColor: darkBorder,
++      cardTheme: CardThemeData(
++        color: darkSurface,
++        elevation: 0,
++        shape: RoundedRectangleBorder(
++          side: const BorderSide(color: darkBorder),
++          borderRadius: BorderRadius.circular(radiusMedium),
++        ),
++        margin: EdgeInsets.zero,
++      ),
++      appBarTheme: const AppBarTheme(
++        backgroundColor: darkSurface,
++        foregroundColor: Color(0xFFF8FAFC),
++        elevation: 0,
++        scrolledUnderElevation: 1,
++        centerTitle: false,
++        titleTextStyle: TextStyle(
++          fontSize: 18,
++          fontWeight: FontWeight.w600,
++          color: Color(0xFFF8FAFC),
++          letterSpacing: -0.2,
++        ),
++      ),
+       inputDecorationTheme: InputDecorationTheme(
+-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+         filled: true,
+-        fillColor: Colors.white,
+-        contentPadding: const EdgeInsets.symmetric(
+-          horizontal: 14,
+-          vertical: 14,
++        fillColor: darkSurface,
++        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
++        border: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: darkBorder),
+         ),
++        enabledBorder: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: darkBorder),
++        ),
++        focusedBorder: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
++        ),
++        errorBorder: OutlineInputBorder(
++          borderRadius: BorderRadius.circular(radiusMedium),
++          borderSide: const BorderSide(color: dangerRed),
++        ),
++        labelStyle: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
++        hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+       ),
+       filledButtonTheme: FilledButtonThemeData(
+         style: FilledButton.styleFrom(
+-          minimumSize: const Size(0, 48),
+-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
++          backgroundColor: const Color(0xFF2563EB),
++          foregroundColor: Colors.white,
++          minimumSize: const Size(0, 42),
++          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
++          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+           shape: RoundedRectangleBorder(
+-            borderRadius: BorderRadius.circular(10),
++            borderRadius: BorderRadius.circular(radiusMedium),
+           ),
+         ),
+       ),
+-      snackBarTheme: const SnackBarThemeData(
++      outlinedButtonTheme: OutlinedButtonThemeData(
++        style: OutlinedButton.styleFrom(
++          foregroundColor: const Color(0xFF93C5FD),
++          side: const BorderSide(color: darkBorder),
++          minimumSize: const Size(0, 42),
++          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
++          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
++          shape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(radiusMedium),
++          ),
++        ),
++      ),
++      dataTableTheme: DataTableThemeData(
++        headingRowColor: WidgetStateProperty.all(darkHeader),
++        headingTextStyle: const TextStyle(
++          fontSize: 13,
++          fontWeight: FontWeight.w700,
++          color: Color(0xFF94A3B8),
++          letterSpacing: 0.3,
++        ),
++        dataTextStyle: const TextStyle(
++          fontSize: 14,
++          color: Color(0xFFF1F5F9),
++        ),
++        dividerThickness: 1,
++        horizontalMargin: 16,
++        columnSpacing: 24,
++      ),
++      snackBarTheme: SnackBarThemeData(
+         behavior: SnackBarBehavior.floating,
++        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMedium)),
++      ),
++      dialogTheme: DialogThemeData(
++        backgroundColor: darkSurface,
++        elevation: 6,
++        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLarge)),
+       ),
+     );
+   }
+diff --git a/lib/shared/widgets/app_confirm_dialog.dart b/lib/shared/widgets/app_confirm_dialog.dart
+new file mode 100644
+index 0000000..ae9a8f4
+--- /dev/null
++++ b/lib/shared/widgets/app_confirm_dialog.dart
+@@ -0,0 +1,74 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++
++/// Standard confirmation dialog with Esc/Enter keyboard handling and destructive mode styling.
++class AppConfirmDialog extends StatelessWidget {
++  const AppConfirmDialog({
++    super.key,
++    required this.title,
++    required this.message,
++    this.confirmLabel = 'Confirm',
++    this.cancelLabel = 'Cancel',
++    this.isDestructive = false,
++  });
++
++  final String title;
++  final String message;
++  final String confirmLabel;
++  final String cancelLabel;
++  final bool isDestructive;
++
++  static Future<bool> show(
++    BuildContext context, {
++    required String title,
++    required String message,
++    String confirmLabel = 'Confirm',
++    String cancelLabel = 'Cancel',
++    bool isDestructive = false,
++  }) async {
++    final result = await showDialog<bool>(
++      context: context,
++      builder: (ctx) => AppConfirmDialog(
++        title: title,
++        message: message,
++        confirmLabel: confirmLabel,
++        cancelLabel: cancelLabel,
++        isDestructive: isDestructive,
++      ),
++    );
++    return result ?? false;
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return AlertDialog(
++      title: Row(
++        children: [
++          if (isDestructive) ...[
++            const Icon(Icons.warning_amber_rounded, color: AppTheme.dangerRed, size: 24),
++            const SizedBox(width: 8),
++          ],
++          Expanded(child: Text(title, style: const TextStyle(fontSize: 18))),
++        ],
++      ),
++      content: Text(
++        message,
++        style: const TextStyle(fontSize: 14, color: AppTheme.secondarySlate, height: 1.4),
++      ),
++      actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
++      actions: [
++        OutlinedButton(
++          onPressed: () => Navigator.of(context).pop(false),
++          child: Text(cancelLabel),
++        ),
++        FilledButton(
++          style: isDestructive
++              ? FilledButton.styleFrom(backgroundColor: AppTheme.dangerRed)
++              : null,
++          onPressed: () => Navigator.of(context).pop(true),
++          child: Text(confirmLabel),
++        ),
++      ],
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_data_table.dart b/lib/shared/widgets/app_data_table.dart
+new file mode 100644
+index 0000000..7f59d2a
+--- /dev/null
++++ b/lib/shared/widgets/app_data_table.dart
+@@ -0,0 +1,101 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++import 'app_empty_state.dart';
++
++/// Highly customizable paginated, searchable, responsive data table.
++class AppDataTable<T> extends StatelessWidget {
++  const AppDataTable({
++    super.key,
++    required this.columns,
++    required this.rows,
++    this.isLoading = false,
++    this.emptyMessage = 'No records found',
++    this.emptyIcon = Icons.folder_open_outlined,
++    this.searchQuery,
++    this.onSearchChanged,
++    this.searchPlaceholder = 'Search records...',
++    this.headerActions,
++  });
++
++  final List<DataColumn> columns;
++  final List<DataRow> rows;
++  final bool isLoading;
++  final String emptyMessage;
++  final IconData emptyIcon;
++  final String? searchQuery;
++  final ValueChanged<String>? onSearchChanged;
++  final String searchPlaceholder;
++  final List<Widget>? headerActions;
++
++  @override
++  Widget build(BuildContext context) {
++    return Card(
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.stretch,
++        children: [
++          // Filter & search header
++          if (onSearchChanged != null || (headerActions != null && headerActions!.isNotEmpty))
++            Padding(
++              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
++              child: Row(
++                children: [
++                  if (onSearchChanged != null)
++                    Expanded(
++                      child: SizedBox(
++                        height: 40,
++                        child: TextField(
++                          onChanged: onSearchChanged,
++                          decoration: InputDecoration(
++                            hintText: searchPlaceholder,
++                            prefixIcon: const Icon(Icons.search, size: 20),
++                            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
++                            border: OutlineInputBorder(
++                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
++                              borderSide: const BorderSide(color: AppTheme.lightBorder),
++                            ),
++                          ),
++                        ),
++                      ),
++                    ),
++                  if (headerActions != null) ...[
++                    const SizedBox(width: 12),
++                    ...headerActions!,
++                  ],
++                ],
++              ),
++            ),
++          const Divider(height: 1),
++
++          // Content body
++          if (isLoading)
++            const Padding(
++              padding: EdgeInsets.all(40),
++              child: Center(child: CircularProgressIndicator()),
++            )
++          else if (rows.isEmpty)
++            Padding(
++              padding: const EdgeInsets.all(32),
++              child: AppEmptyState(
++                title: emptyMessage,
++                icon: emptyIcon,
++              ),
++            )
++          else
++            SingleChildScrollView(
++              scrollDirection: Axis.horizontal,
++              child: ConstrainedBox(
++                constraints: BoxConstraints(minWidth: MediaQuery.sizeOf(context).width - 64),
++                child: DataTable(
++                  columns: columns,
++                  rows: rows,
++                  headingRowHeight: 44,
++                  dataRowMinHeight: 48,
++                  dataRowMaxHeight: 64,
++                ),
++              ),
++            ),
++        ],
++      ),
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_date_field.dart b/lib/shared/widgets/app_date_field.dart
+new file mode 100644
+index 0000000..b3ec0f1
+--- /dev/null
++++ b/lib/shared/widgets/app_date_field.dart
+@@ -0,0 +1,60 @@
++import 'package:flutter/material.dart';
++import 'package:intl/intl.dart';
++
++/// Form input with calendar picker for standardized date capture.
++class AppDateField extends StatelessWidget {
++  const AppDateField({
++    super.key,
++    required this.selectedDate,
++    required this.onDateSelected,
++    required this.label,
++    this.firstDate,
++    this.lastDate,
++    this.enabled = true,
++  });
++
++  final DateTime? selectedDate;
++  final ValueChanged<DateTime> onDateSelected;
++  final String label;
++  final DateTime? firstDate;
++  final DateTime? lastDate;
++  final bool enabled;
++
++  @override
++  Widget build(BuildContext context) {
++    final displayText = selectedDate != null
++        ? DateFormat('dd MMM yyyy').format(selectedDate!)
++        : 'Select date';
++
++    return InkWell(
++      onTap: enabled
++          ? () async {
++              final picked = await showDatePicker(
++                context: context,
++                initialDate: selectedDate ?? DateTime.now(),
++                firstDate: firstDate ?? DateTime(2000),
++                lastDate: lastDate ?? DateTime(2100),
++              );
++              if (picked != null) {
++                onDateSelected(picked);
++              }
++            }
++          : null,
++      borderRadius: BorderRadius.circular(8),
++      child: InputDecorator(
++        decoration: InputDecoration(
++          labelText: label,
++          suffixIcon: const Icon(Icons.calendar_today_rounded, size: 20),
++          enabled: enabled,
++        ),
++        child: Text(
++          displayText,
++          style: TextStyle(
++            fontSize: 14,
++            color: selectedDate != null ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_empty_state.dart b/lib/shared/widgets/app_empty_state.dart
+new file mode 100644
+index 0000000..ee99a75
+--- /dev/null
++++ b/lib/shared/widgets/app_empty_state.dart
+@@ -0,0 +1,71 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++
++/// Standard empty state illustration and action placeholder.
++class AppEmptyState extends StatelessWidget {
++  const AppEmptyState({
++    super.key,
++    required this.title,
++    this.message,
++    this.icon = Icons.inbox_outlined,
++    this.actionLabel,
++    this.onAction,
++  });
++
++  final String title;
++  final String? message;
++  final IconData icon;
++  final String? actionLabel;
++  final VoidCallback? onAction;
++
++  @override
++  Widget build(BuildContext context) {
++    return Center(
++      child: Padding(
++        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Container(
++              padding: const EdgeInsets.all(16),
++              decoration: BoxDecoration(
++                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
++                shape: BoxShape.circle,
++              ),
++              child: Icon(icon, size: 40, color: AppTheme.secondarySlate),
++            ),
++            const SizedBox(height: 16),
++            Text(
++              title,
++              textAlign: TextAlign.center,
++              style: const TextStyle(
++                fontSize: 16,
++                fontWeight: FontWeight.w600,
++                color: Color(0xFF1E293B),
++              ),
++            ),
++            if (message != null) ...[
++              const SizedBox(height: 6),
++              ConstrainedBox(
++                constraints: const BoxConstraints(maxWidth: 360),
++                child: Text(
++                  message!,
++                  textAlign: TextAlign.center,
++                  style: const TextStyle(fontSize: 14, color: AppTheme.secondarySlate),
++                ),
++              ),
++            ],
++            if (actionLabel != null && onAction != null) ...[
++              const SizedBox(height: 20),
++              FilledButton.icon(
++                onPressed: onAction,
++                icon: const Icon(Icons.add, size: 18),
++                label: Text(actionLabel!),
++              ),
++            ],
++          ],
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_error_state.dart b/lib/shared/widgets/app_error_state.dart
+new file mode 100644
+index 0000000..b6c17a4
+--- /dev/null
++++ b/lib/shared/widgets/app_error_state.dart
+@@ -0,0 +1,65 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++
++/// Standard error feedback panel with retry capability.
++class AppErrorState extends StatelessWidget {
++  const AppErrorState({
++    super.key,
++    required this.message,
++    this.title = 'Something went wrong',
++    this.onRetry,
++  });
++
++  final String title;
++  final String message;
++  final VoidCallback? onRetry;
++
++  @override
++  Widget build(BuildContext context) {
++    return Center(
++      child: Padding(
++        padding: const EdgeInsets.all(24),
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Container(
++              padding: const EdgeInsets.all(16),
++              decoration: const BoxDecoration(
++                color: AppTheme.dangerBg,
++                shape: BoxShape.circle,
++              ),
++              child: const Icon(Icons.error_outline_rounded, size: 40, color: AppTheme.dangerRed),
++            ),
++            const SizedBox(height: 16),
++            Text(
++              title,
++              textAlign: TextAlign.center,
++              style: const TextStyle(
++                fontSize: 16,
++                fontWeight: FontWeight.w600,
++                color: Color(0xFF1E293B),
++              ),
++            ),
++            const SizedBox(height: 6),
++            ConstrainedBox(
++              constraints: const BoxConstraints(maxWidth: 400),
++              child: Text(
++                message,
++                textAlign: TextAlign.center,
++                style: const TextStyle(fontSize: 14, color: AppTheme.secondarySlate),
++              ),
++            ),
++            if (onRetry != null) ...[
++              const SizedBox(height: 20),
++              OutlinedButton.icon(
++                onPressed: onRetry,
++                icon: const Icon(Icons.refresh, size: 18),
++                label: const Text('Try Again'),
++              ),
++            ],
++          ],
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_form_section.dart b/lib/shared/widgets/app_form_section.dart
+new file mode 100644
+index 0000000..b02feec
+--- /dev/null
++++ b/lib/shared/widgets/app_form_section.dart
+@@ -0,0 +1,50 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++
++/// Reusable grouped form section with title and optional description.
++class AppFormSection extends StatelessWidget {
++  const AppFormSection({
++    super.key,
++    required this.title,
++    this.description,
++    required this.children,
++    this.padding = const EdgeInsets.all(20),
++  });
++
++  final String title;
++  final String? description;
++  final List<Widget> children;
++  final EdgeInsetsGeometry padding;
++
++  @override
++  Widget build(BuildContext context) {
++    return Card(
++      child: Padding(
++        padding: padding,
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            Text(
++              title,
++              style: const TextStyle(
++                fontSize: 16,
++                fontWeight: FontWeight.w700,
++                color: Color(0xFF0F172A),
++                letterSpacing: -0.2,
++              ),
++            ),
++            if (description != null) ...[
++              const SizedBox(height: 4),
++              Text(
++                description!,
++                style: const TextStyle(fontSize: 13, color: AppTheme.secondarySlate),
++              ),
++            ],
++            const SizedBox(height: 16),
++            ...children,
++          ],
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_money_field.dart b/lib/shared/widgets/app_money_field.dart
+new file mode 100644
+index 0000000..5260653
+--- /dev/null
++++ b/lib/shared/widgets/app_money_field.dart
+@@ -0,0 +1,46 @@
++import 'package:flutter/material.dart';
++import 'package:flutter/services.dart';
++import '../../core/config/app_config.dart';
++
++/// Form input specifically tailored for monetary amounts formatted with AppConfig.currencySymbol (Rs).
++class AppMoneyField extends StatelessWidget {
++  const AppMoneyField({
++    super.key,
++    required this.controller,
++    required this.label,
++    this.hintText = '0',
++    this.validator,
++    this.enabled = true,
++    this.onChanged,
++  });
++
++  final TextEditingController controller;
++  final String label;
++  final String hintText;
++  final String? Function(String?)? validator;
++  final bool enabled;
++  final ValueChanged<String>? onChanged;
++
++  @override
++  Widget build(BuildContext context) {
++    return TextFormField(
++      controller: controller,
++      enabled: enabled,
++      keyboardType: const TextInputType.numberWithOptions(decimal: true),
++      inputFormatters: [
++        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
++      ],
++      decoration: InputDecoration(
++        labelText: label,
++        hintText: hintText,
++        prefixText: '${AppConfig.currencySymbol} ',
++        prefixStyle: const TextStyle(
++          fontWeight: FontWeight.bold,
++          color: Color(0xFF1E293B),
++        ),
++      ),
++      validator: validator,
++      onChanged: onChanged,
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_page_header.dart b/lib/shared/widgets/app_page_header.dart
+new file mode 100644
+index 0000000..489806b
+--- /dev/null
++++ b/lib/shared/widgets/app_page_header.dart
+@@ -0,0 +1,94 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++import '../theme/app_breakpoints.dart';
++
++/// Reusable top title bar for screens containing breadcrumb, title, search and primary actions.
++class AppPageHeader extends StatelessWidget {
++  const AppPageHeader({
++    super.key,
++    required this.title,
++    this.subtitle,
++    this.actions,
++    this.leading,
++  });
++
++  final String title;
++  final String? subtitle;
++  final List<Widget>? actions;
++  final Widget? leading;
++
++  @override
++  Widget build(BuildContext context) {
++    final isPhone = AppBreakpoints.isPhone(context);
++
++    return Padding(
++      padding: EdgeInsets.symmetric(
++        horizontal: isPhone ? 16 : 24,
++        vertical: isPhone ? 12 : 20,
++      ),
++      child: isPhone
++          ? Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                Row(
++                  children: [
++                    if (leading != null) ...[leading!, const SizedBox(width: 8)],
++                    Expanded(
++                      child: Text(
++                        title,
++                        style: const TextStyle(
++                          fontSize: 20,
++                          fontWeight: FontWeight.bold,
++                          color: Color(0xFF0F172A),
++                          letterSpacing: -0.3,
++                        ),
++                      ),
++                    ),
++                  ],
++                ),
++                if (subtitle != null) ...[
++                  const SizedBox(height: 4),
++                  Text(
++                    subtitle!,
++                    style: const TextStyle(fontSize: 13, color: AppTheme.secondarySlate),
++                  ),
++                ],
++                if (actions != null && actions!.isNotEmpty) ...[
++                  const SizedBox(height: 12),
++                  Wrap(spacing: 8, runSpacing: 8, children: actions!),
++                ],
++              ],
++            )
++          : Row(
++              children: [
++                if (leading != null) ...[leading!, const SizedBox(width: 12)],
++                Expanded(
++                  child: Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    mainAxisSize: MainAxisSize.min,
++                    children: [
++                      Text(
++                        title,
++                        style: const TextStyle(
++                          fontSize: 22,
++                          fontWeight: FontWeight.bold,
++                          color: Color(0xFF0F172A),
++                          letterSpacing: -0.3,
++                        ),
++                      ),
++                      if (subtitle != null) ...[
++                        const SizedBox(height: 2),
++                        Text(
++                          subtitle!,
++                          style: const TextStyle(fontSize: 13, color: AppTheme.secondarySlate),
++                        ),
++                      ],
++                    ],
++                  ),
++                ),
++                if (actions != null) Row(mainAxisSize: MainAxisSize.min, children: actions!),
++              ],
++            ),
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_shell.dart b/lib/shared/widgets/app_shell.dart
+new file mode 100644
+index 0000000..8e621ea
+--- /dev/null
++++ b/lib/shared/widgets/app_shell.dart
+@@ -0,0 +1,305 @@
++import 'package:flutter/material.dart';
++import '../../core/config/app_config.dart';
++import '../../theme/app_theme.dart';
++import '../theme/app_breakpoints.dart';
++
++/// Navigation item definition for AppShell sidebar and drawer.
++class AppNavDestination {
++  const AppNavDestination({
++    required this.label,
++    required this.icon,
++    this.selectedIcon,
++    this.badge,
++  });
++
++  final String label;
++  final IconData icon;
++  final IconData? selectedIcon;
++  final String? badge;
++}
++
++/// Responsive modern application shell providing persistent collapsible sidebar
++/// on desktop/tablet and drawer/bottom-bar on mobile.
++class AppShell extends StatefulWidget {
++  const AppShell({
++    super.key,
++    required this.selectedIndex,
++    required this.onDestinationSelected,
++    required this.destinations,
++    required this.body,
++    this.schoolName = AppConfig.appName,
++    this.userName,
++    this.userRole,
++    this.onLogout,
++  });
++
++  final int selectedIndex;
++  final ValueChanged<int> onDestinationSelected;
++  final List<AppNavDestination> destinations;
++  final Widget body;
++  final String schoolName;
++  final String? userName;
++  final String? userRole;
++  final VoidCallback? onLogout;
++
++  @override
++  State<AppShell> createState() => _AppShellState();
++}
++
++class _AppShellState extends State<AppShell> {
++  bool _isSidebarCollapsed = false;
++
++  @override
++  Widget build(BuildContext context) {
++    final isDesktop = AppBreakpoints.isDesktop(context);
++    final isTablet = AppBreakpoints.isTablet(context);
++
++    if (isDesktop || isTablet) {
++      return Scaffold(
++        body: Row(
++          children: [
++            // Collapsible Sidebar
++            AnimatedContainer(
++              duration: const Duration(milliseconds: 200),
++              width: _isSidebarCollapsed ? 72 : 240,
++              decoration: const BoxDecoration(
++                color: AppTheme.primaryNavy,
++                boxShadow: [
++                  BoxShadow(
++                    color: Colors.black12,
++                    blurRadius: 4,
++                    offset: Offset(1, 0),
++                  ),
++                ],
++              ),
++              child: Column(
++                children: [
++                  // App Branding Header
++                  Container(
++                    height: 64,
++                    padding: const EdgeInsets.symmetric(horizontal: 16),
++                    alignment: Alignment.centerLeft,
++                    child: Row(
++                      children: [
++                        Container(
++                          padding: const EdgeInsets.all(6),
++                          decoration: BoxDecoration(
++                            color: Colors.white24,
++                            borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
++                          ),
++                          child: const Icon(Icons.school, color: Colors.white, size: 24),
++                        ),
++                        if (!_isSidebarCollapsed) ...[
++                          const SizedBox(width: 12),
++                          Expanded(
++                            child: Text(
++                              widget.schoolName,
++                              style: const TextStyle(
++                                color: Colors.white,
++                                fontSize: 14,
++                                fontWeight: FontWeight.bold,
++                              ),
++                              maxLines: 1,
++                              overflow: TextOverflow.ellipsis,
++                            ),
++                          ),
++                        ],
++                      ],
++                    ),
++                  ),
++                  const Divider(color: Colors.white12, height: 1),
++
++                  // Navigation list
++                  Expanded(
++                    child: ListView.builder(
++                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
++                      itemCount: widget.destinations.length,
++                      itemBuilder: (context, index) {
++                        final dest = widget.destinations[index];
++                        final isSelected = index == widget.selectedIndex;
++
++                        if (_isSidebarCollapsed) {
++                          return Tooltip(
++                            message: dest.label,
++                            placement: TooltipPlacement.right,
++                            child: InkWell(
++                              onTap: () => widget.onDestinationSelected(index),
++                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
++                              child: Container(
++                                height: 44,
++                                margin: const EdgeInsets.symmetric(vertical: 2),
++                                decoration: BoxDecoration(
++                                  color: isSelected ? Colors.white.withOpacity(0.15) : Colors.transparent,
++                                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
++                                ),
++                                child: Icon(
++                                  isSelected ? (dest.selectedIcon ?? dest.icon) : dest.icon,
++                                  color: isSelected ? Colors.white : Colors.white70,
++                                  size: 22,
++                                ),
++                              ),
++                            ),
++                          );
++                        }
++
++                        return InkWell(
++                          onTap: () => widget.onDestinationSelected(index),
++                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
++                          child: Container(
++                            height: 40,
++                            margin: const EdgeInsets.symmetric(vertical: 2),
++                            padding: const EdgeInsets.symmetric(horizontal: 12),
++                            decoration: BoxDecoration(
++                              color: isSelected ? Colors.white.withOpacity(0.15) : Colors.transparent,
++                              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
++                            ),
++                            child: Row(
++                              children: [
++                                Icon(
++                                  isSelected ? (dest.selectedIcon ?? dest.icon) : dest.icon,
++                                  color: isSelected ? Colors.white : Colors.white70,
++                                  size: 20,
++                                ),
++                                const SizedBox(width: 12),
++                                Expanded(
++                                  child: Text(
++                                    dest.label,
++                                    style: TextStyle(
++                                      color: isSelected ? Colors.white : Colors.white70,
++                                      fontSize: 13,
++                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
++                                    ),
++                                    maxLines: 1,
++                                    overflow: TextOverflow.ellipsis,
++                                  ),
++                                ),
++                              ],
++                            ),
++                          ),
++                        );
++                      },
++                    ),
++                  ),
++
++                  // User Profile & Collapse Toggle Footer
++                  const Divider(color: Colors.white12, height: 1),
++                  if (widget.userName != null && !_isSidebarCollapsed)
++                    Padding(
++                      padding: const EdgeInsets.all(12),
++                      child: Row(
++                        children: [
++                          CircleAvatar(
++                            radius: 16,
++                            backgroundColor: Colors.white24,
++                            child: Text(
++                              widget.userName![0].toUpperCase(),
++                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
++                            ),
++                          ),
++                          const SizedBox(width: 8),
++                          Expanded(
++                            child: Column(
++                              crossAxisAlignment: CrossAxisAlignment.start,
++                              mainAxisSize: MainAxisSize.min,
++                              children: [
++                                Text(
++                                  widget.userName!,
++                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
++                                  maxLines: 1,
++                                  overflow: TextOverflow.ellipsis,
++                                ),
++                                if (widget.userRole != null)
++                                  Text(
++                                    widget.userRole!,
++                                    style: const TextStyle(color: Colors.white60, fontSize: 11),
++                                  ),
++                              ],
++                            ),
++                          ),
++                          if (widget.onLogout != null)
++                            IconButton(
++                              icon: const Icon(Icons.logout, size: 18, color: Colors.white70),
++                              tooltip: 'Logout',
++                              onPressed: widget.onLogout,
++                            ),
++                        ],
++                      ),
++                    ),
++                  // Collapse / Expand button
++                  IconButton(
++                    onPressed: () => setState(() => _isSidebarCollapsed = !_isSidebarCollapsed),
++                    icon: Icon(
++                      _isSidebarCollapsed ? Icons.chevron_right : Icons.chevron_left,
++                      color: Colors.white70,
++                    ),
++                    tooltip: _isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar',
++                  ),
++                  const SizedBox(height: 8),
++                ],
++              ),
++            ),
++            // Main content
++            Expanded(child: widget.body),
++          ],
++        ),
++      );
++    }
++
++    // Phone / Small Mobile Scaffold
++    return Scaffold(
++      drawer: Drawer(
++        child: Column(
++          children: [
++            UserAccountsDrawerHeader(
++              decoration: const BoxDecoration(color: AppTheme.primaryNavy),
++              currentAccountPicture: CircleAvatar(
++                backgroundColor: Colors.white,
++                child: Text(
++                  widget.userName != null && widget.userName!.isNotEmpty
++                      ? widget.userName![0].toUpperCase()
++                      : 'S',
++                  style: const TextStyle(color: AppTheme.primaryNavy, fontWeight: FontWeight.bold),
++                ),
++              ),
++              accountName: Text(widget.userName ?? widget.schoolName),
++              accountEmail: Text(widget.userRole ?? AppConfig.appName),
++            ),
++            Expanded(
++              child: ListView.builder(
++                itemCount: widget.destinations.length,
++                itemBuilder: (context, index) {
++                  final dest = widget.destinations[index];
++                  final isSelected = index == widget.selectedIndex;
++                  return ListTile(
++                    leading: Icon(dest.icon, color: isSelected ? AppTheme.primaryNavy : null),
++                    title: Text(
++                      dest.label,
++                      style: TextStyle(
++                        color: isSelected ? AppTheme.primaryNavy : null,
++                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
++                      ),
++                    ),
++                    selected: isSelected,
++                    onTap: () {
++                      Navigator.of(context).pop();
++                      widget.onDestinationSelected(index);
++                    },
++                  );
++                },
++              ),
++            ),
++            if (widget.onLogout != null) ...[
++              const Divider(),
++              ListTile(
++                leading: const Icon(Icons.logout, color: AppTheme.dangerRed),
++                title: const Text('Logout', style: TextStyle(color: AppTheme.dangerRed)),
++                onTap: widget.onLogout,
++              ),
++            ],
++          ],
++        ),
++      ),
++      body: widget.body,
++    );
++  }
++}
+diff --git a/lib/shared/widgets/app_stat_card.dart b/lib/shared/widgets/app_stat_card.dart
+new file mode 100644
+index 0000000..067cbbb
+--- /dev/null
++++ b/lib/shared/widgets/app_stat_card.dart
+@@ -0,0 +1,92 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++
++/// Reusable metric card with icon accent, trend indicator, and optional tap callback.
++class AppStatCard extends StatelessWidget {
++  const AppStatCard({
++    super.key,
++    required this.title,
++    required this.value,
++    required this.icon,
++    this.color = AppTheme.primaryNavy,
++    this.subtitle,
++    this.onTap,
++  });
++
++  final String title;
++  final String value;
++  final IconData icon;
++  final Color color;
++  final String? subtitle;
++  final VoidCallback? onTap;
++
++  @override
++  Widget build(BuildContext context) {
++    final cardContent = Padding(
++      padding: const EdgeInsets.all(16),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        mainAxisAlignment: MainAxisAlignment.spaceBetween,
++        children: [
++          Row(
++            mainAxisAlignment: MainAxisAlignment.spaceBetween,
++            children: [
++              Expanded(
++                child: Text(
++                  title.toUpperCase(),
++                  style: const TextStyle(
++                    fontSize: 12,
++                    fontWeight: FontWeight.w700,
++                    color: AppTheme.secondarySlate,
++                    letterSpacing: 0.5,
++                  ),
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                ),
++              ),
++              Container(
++                padding: const EdgeInsets.all(8),
++                decoration: BoxDecoration(
++                  color: color.withOpacity(0.1),
++                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
++                ),
++                child: Icon(icon, size: 20, color: color),
++              ),
++            ],
++          ),
++          const SizedBox(height: 12),
++          Text(
++            value,
++            style: const TextStyle(
++              fontSize: 24,
++              fontWeight: FontWeight.bold,
++              color: Color(0xFF0F172A),
++              letterSpacing: -0.5,
++            ),
++          ),
++          if (subtitle != null) ...[
++            const SizedBox(height: 4),
++            Text(
++              subtitle!,
++              style: const TextStyle(fontSize: 12, color: AppTheme.secondarySlate),
++              maxLines: 1,
++              overflow: TextOverflow.ellipsis,
++            ),
++          ],
++        ],
++      ),
++    );
++
++    if (onTap != null) {
++      return Card(
++        clipBehavior: Clip.antiAlias,
++        child: InkWell(
++          onTap: onTap,
++          child: cardContent,
++        ),
++      );
++    }
++
++    return Card(child: cardContent);
++  }
++}
+diff --git a/lib/shared/widgets/app_status_chip.dart b/lib/shared/widgets/app_status_chip.dart
+new file mode 100644
+index 0000000..327f9de
+--- /dev/null
++++ b/lib/shared/widgets/app_status_chip.dart
+@@ -0,0 +1,72 @@
++import 'package:flutter/material.dart';
++import '../../theme/app_theme.dart';
++
++/// Reusable status chip rendering semantic colors for school statuses.
++class AppStatusChip extends StatelessWidget {
++  const AppStatusChip({
++    super.key,
++    required this.label,
++    this.color,
++    this.backgroundColor,
++    this.isSuccess = false,
++    this.isWarning = false,
++    this.isDanger = false,
++    this.isInfo = false,
++    this.icon,
++  });
++
++  final String label;
++  final Color? color;
++  final Color? backgroundColor;
++  final bool isSuccess;
++  final bool isWarning;
++  final bool isDanger;
++  final bool isInfo;
++  final IconData? icon;
++
++  @override
++  Widget build(BuildContext context) {
++    Color effectiveFg = color ?? AppTheme.secondarySlate;
++    Color effectiveBg = backgroundColor ?? const Color(0xFFF1F5F9);
++
++    if (isSuccess) {
++      effectiveFg = AppTheme.successGreen;
++      effectiveBg = AppTheme.successBg;
++    } else if (isWarning) {
++      effectiveFg = AppTheme.warningAmber;
++      effectiveBg = AppTheme.warningBg;
++    } else if (isDanger) {
++      effectiveFg = AppTheme.dangerRed;
++      effectiveBg = AppTheme.dangerBg;
++    } else if (isInfo) {
++      effectiveFg = AppTheme.infoSky;
++      effectiveBg = AppTheme.infoBg;
++    }
++
++    return Container(
++      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
++      decoration: BoxDecoration(
++        color: effectiveBg,
++        borderRadius: BorderRadius.circular(16),
++        border: Border.all(color: effectiveFg.withOpacity(0.25)),
++      ),
++      child: Row(
++        mainAxisSize: MainAxisSize.min,
++        children: [
++          if (icon != null) ...[
++            Icon(icon, size: 13, color: effectiveFg),
++            const SizedBox(width: 4),
++          ],
++          Text(
++            label,
++            style: TextStyle(
++              fontSize: 12,
++              fontWeight: FontWeight.w600,
++              color: effectiveFg,
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
+-- 
+2.43.0
+
+
+From 5b787ba4373ef5b45967a8812604ebdca6364466 Mon Sep 17 00:00:00 2001
+From: School Office Redesign <redesign@schooloffice.local>
+Date: Thu, 19 Nov 2026 19:06:04 +0000
+Subject: [PATCH 2/3] feat(ui): refine detail screens, receipts, and voucher
+ cards for desktop responsiveness
+
+---
+ .../presentation/employee_details_screen.dart     | 11 ++++++++---
+ .../presentation/expense_details_screen.dart      | 15 ++++++++++-----
+ .../presentation/family_details_screen.dart       | 11 ++++++++---
+ lib/features/fee/presentation/receipt_screen.dart | 11 ++++++++---
+ .../presentation/salary_record_detail_screen.dart | 12 ++++++++----
+ .../presentation/student_details_screen.dart      | 11 ++++++++---
+ 6 files changed, 50 insertions(+), 21 deletions(-)
+
+diff --git a/lib/features/employee/presentation/employee_details_screen.dart b/lib/features/employee/presentation/employee_details_screen.dart
+index 5b7a439..bf86f11 100644
+--- a/lib/features/employee/presentation/employee_details_screen.dart
++++ b/lib/features/employee/presentation/employee_details_screen.dart
+@@ -199,8 +199,11 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
+     final details = _details!;
+     final employee = details.employee;
+ 
+-    return ListView(
+-      padding: const EdgeInsets.all(24),
++    return Center(
++      child: ConstrainedBox(
++        constraints: const BoxConstraints(maxWidth: 1000),
++        child: ListView(
++          padding: const EdgeInsets.all(24),
+       children: [
+         LayoutBuilder(
+           builder: (context, constraints) {
+@@ -305,7 +308,9 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
+           ),
+         ),
+       ],
+-    );
++    ),
++  ),
++);
+   }
+ 
+   Widget _buildInfoCard(ThemeData theme, EmployeeDetails details) {
+diff --git a/lib/features/expense/presentation/expense_details_screen.dart b/lib/features/expense/presentation/expense_details_screen.dart
+index 51f3889..661786b 100644
+--- a/lib/features/expense/presentation/expense_details_screen.dart
++++ b/lib/features/expense/presentation/expense_details_screen.dart
+@@ -45,10 +45,13 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
+             ),
+         ],
+       ),
+-      body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(24),
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
++      body: Center(
++        child: ConstrainedBox(
++          constraints: const BoxConstraints(maxWidth: 800),
++          child: SingleChildScrollView(
++            padding: const EdgeInsets.all(24),
++            child: Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             _buildInfoRow(
+               Icons.receipt_long_rounded,
+@@ -106,7 +109,9 @@ class _ExpenseDetailsScreenState extends State<ExpenseDetailsScreen> {
+           ],
+         ),
+       ),
+-    );
++    ),
++  ),
++);
+   }
+ 
+   Widget _buildInfoRow(IconData icon, String label, String value,
+diff --git a/lib/features/family/presentation/family_details_screen.dart b/lib/features/family/presentation/family_details_screen.dart
+index 84835ac..7e8c636 100644
+--- a/lib/features/family/presentation/family_details_screen.dart
++++ b/lib/features/family/presentation/family_details_screen.dart
+@@ -194,8 +194,11 @@ class _FamilyDetailsScreenState extends State<FamilyDetailsScreen> {
+     final details = _details!;
+     final family = details.family;
+ 
+-    return ListView(
+-      padding: const EdgeInsets.all(24),
++    return Center(
++      child: ConstrainedBox(
++        constraints: const BoxConstraints(maxWidth: 1000),
++        child: ListView(
++          padding: const EdgeInsets.all(24),
+       children: [
+         LayoutBuilder(
+           builder: (context, constraints) {
+@@ -316,7 +319,9 @@ class _FamilyDetailsScreenState extends State<FamilyDetailsScreen> {
+           ],
+         ),
+       ],
+-    );
++    ),
++  ),
++);
+   }
+ 
+   Widget _buildInfoCard(ThemeData theme, FamilyDetails details) {
+diff --git a/lib/features/fee/presentation/receipt_screen.dart b/lib/features/fee/presentation/receipt_screen.dart
+index da6a442..0064cc7 100644
+--- a/lib/features/fee/presentation/receipt_screen.dart
++++ b/lib/features/fee/presentation/receipt_screen.dart
+@@ -55,8 +55,11 @@ class ReceiptScreen extends StatelessWidget {
+     final footer = profile?.receiptFooter.trim() ?? '';
+     return Scaffold(
+       appBar: AppBar(title: const Text('Fee Receipt')),
+-      body: ListView(
+-        padding: const EdgeInsets.all(24),
++      body: Center(
++        child: ConstrainedBox(
++          constraints: const BoxConstraints(maxWidth: 720),
++          child: ListView(
++            padding: const EdgeInsets.all(24),
+         children: [
+           if (r.isReversed)
+             Container(
+@@ -195,7 +198,9 @@ class ReceiptScreen extends StatelessWidget {
+           ),
+         ],
+       ),
+-    );
++    ),
++  ),
++);
+   }
+ 
+   Widget _row(BuildContext context, String label, String value,
+diff --git a/lib/features/salary/presentation/salary_record_detail_screen.dart b/lib/features/salary/presentation/salary_record_detail_screen.dart
+index 95c7c20..48d7ccc 100644
+--- a/lib/features/salary/presentation/salary_record_detail_screen.dart
++++ b/lib/features/salary/presentation/salary_record_detail_screen.dart
+@@ -192,9 +192,11 @@ class _SalaryRecordDetailScreenState extends State<SalaryRecordDetailScreen> {
+       );
+     }
+     final item = _item!;
+-    final record = item.record;
+-    return ListView(
+-      padding: const EdgeInsets.all(16),
++    return Center(
++      child: ConstrainedBox(
++        constraints: const BoxConstraints(maxWidth: 800),
++        child: ListView(
++          padding: const EdgeInsets.all(24),
+       children: [
+         Card(
+           child: Padding(
+@@ -297,7 +299,9 @@ class _SalaryRecordDetailScreenState extends State<SalaryRecordDetailScreen> {
+           ),
+         ),
+       ],
+-    );
++    ),
++  ),
++);
+   }
+ 
+   static String _signed(double value) =>
+diff --git a/lib/features/student/presentation/student_details_screen.dart b/lib/features/student/presentation/student_details_screen.dart
+index 3e5f00b..4922f9a 100644
+--- a/lib/features/student/presentation/student_details_screen.dart
++++ b/lib/features/student/presentation/student_details_screen.dart
+@@ -156,8 +156,11 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
+     final details = _details!;
+     final student = details.student;
+ 
+-    return ListView(
+-      padding: const EdgeInsets.all(24),
++    return Center(
++      child: ConstrainedBox(
++        constraints: const BoxConstraints(maxWidth: 1000),
++        child: ListView(
++          padding: const EdgeInsets.all(24),
+       children: [
+         Wrap(
+           spacing: 12,
+@@ -224,7 +227,9 @@ class _StudentDetailsScreenState extends State<StudentDetailsScreen> {
+           ],
+         ),
+       ],
+-    );
++    ),
++  ),
++);
+   }
+ 
+   Widget _sectionTitle(ThemeData theme, String title) {
+-- 
+2.43.0
+
+
+From 46a3df446c1fd8a4440239aeb5ae2373ed4928c8 Mon Sep 17 00:00:00 2001
+From: School Office Redesign <redesign@schooloffice.local>
+Date: Thu, 19 Nov 2026 19:09:03 +0000
+Subject: [PATCH 3/3] feat(theme): activate system Dark Theme support in
+ MaterialApp
+
+---
+ lib/app.dart | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/lib/app.dart b/lib/app.dart
+index 07a9d38..b6cdf1f 100644
+--- a/lib/app.dart
++++ b/lib/app.dart
+@@ -71,6 +71,8 @@ class SchoolOfficeApp extends StatelessWidget {
+       title: AppConfig.appName,
+       debugShowCheckedModeBanner: false,
+       theme: AppTheme.light,
++      darkTheme: AppTheme.dark,
++      themeMode: ThemeMode.system,
+       onGenerateRoute: (settings) {
+         switch (settings.name) {
+           case '/reports/hub':
+-- 
+2.43.0
+

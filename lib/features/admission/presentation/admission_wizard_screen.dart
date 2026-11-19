@@ -378,7 +378,7 @@ class _AdmissionWizardScreenState extends State<AdmissionWizardScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
+            constraints: const BoxConstraints(maxWidth: 960),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

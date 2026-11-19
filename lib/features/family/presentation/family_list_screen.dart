@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../settings/domain/services/settings_service.dart';
+import '../../shared/theme/app_breakpoints.dart';
+import '../../shared/theme/app_theme.dart';
+import '../../shared/widgets/app_data_table.dart';
+import '../../shared/widgets/app_empty_state.dart';
+import '../../shared/widgets/app_error_state.dart';
+import '../../shared/widgets/app_page_header.dart';
 import '../../student/domain/services/student_service.dart';
 import '../domain/entities/family_list_item.dart';
 import '../domain/services/family_service.dart';
@@ -8,7 +14,7 @@ import 'family_details_screen.dart';
 import 'family_form_screen.dart';
 import 'widgets/family_card.dart';
 
-/// Family list + search. Reaches the create form and the family profile.
+/// Modern Family list with responsive desktop data table and mobile cards.
 class FamilyListScreen extends StatefulWidget {
   const FamilyListScreen({
     super.key,
@@ -26,10 +32,19 @@ class FamilyListScreen extends StatefulWidget {
 }
 
 class _FamilyListScreenState extends State<FamilyListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    _searchController.text = widget.familyService.query;
     widget.familyService.search(widget.familyService.query);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _openDetails(FamilyListItem item) async {
@@ -61,35 +76,65 @@ class _FamilyListScreenState extends State<FamilyListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = AppBreakpoints.isDesktop(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Family Management')),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('family_add_fab'),
-        onPressed: _openCreate,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Family'),
-      ),
+      floatingActionButton: isDesktop
+          ? null
+          : FloatingActionButton.extended(
+              key: const Key('family_add_fab'),
+              onPressed: _openCreate,
+              icon: const Icon(Icons.add),
+              label: const Text('Add Family'),
+            ),
       body: ListenableBuilder(
         listenable: widget.familyService,
         builder: (context, _) {
           final service = widget.familyService;
+
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              AppPageHeader(
+                title: 'Family Management',
+                subtitle: '${service.results.length} registered family units',
+                actions: [
+                  FilledButton.icon(
+                    key: const Key('family_add_desktop_btn'),
+                    onPressed: _openCreate,
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Add Family'),
+                  ),
+                ],
+              ),
+              // Filter Toolbar
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: TextField(
-                  key: const Key('family_search_field'),
-                  onChanged: (value) => service.search(value),
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    hintText:
-                        'Search by family ID, guardian, phone or student…',
-                    border: OutlineInputBorder(),
-                    isDense: true,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                child: SizedBox(
+                  maxWidth: 420,
+                  child: TextField(
+                    key: const Key('family_search_field'),
+                    controller: _searchController,
+                    onChanged: (value) => service.search(value),
+                    decoration: InputDecoration(
+                      hintText: 'Search by family ID, guardian, phone or student…',
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                service.search('');
+                              },
+                            )
+                          : null,
+                    ),
                   ),
                 ),
               ),
-              Expanded(child: _buildContent(service)),
+              const SizedBox(height: 12),
+              Expanded(child: _buildBody(context, service, isDesktop)),
             ],
           );
         },
@@ -97,66 +142,90 @@ class _FamilyListScreenState extends State<FamilyListScreen> {
     );
   }
 
-  Widget _buildContent(FamilyService service) {
-    final theme = Theme.of(context);
+  Widget _buildBody(BuildContext context, FamilyService service, bool isDesktop) {
     if (service.isLoading && service.results.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
+
     if (service.error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Families could not be loaded.',
-                style: theme.textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: service.refresh,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+      return AppErrorState(
+        title: 'Could not load families',
+        message: service.error!,
+        onRetry: service.refresh,
       );
     }
+
     if (service.results.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.family_restroom,
-                size: 48,
-                color: theme.colorScheme.outline,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'No families found yet.',
-                style: theme.textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Use "Add Family" to create the first record.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
+      return AppEmptyState(
+        title: 'No families found',
+        message: 'Try changing your search terms or add a new family.',
+        actionLabel: 'Add Family',
+        onAction: _openCreate,
+      );
+    }
+
+    // Responsive Desktop Data Table
+    if (isDesktop) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: AppDataTable(
+          columns: const [
+            DataColumn(label: Text('FAMILY ID')),
+            DataColumn(label: Text('GUARDIAN NAME')),
+            DataColumn(label: Text('RELATION')),
+            DataColumn(label: Text('PRIMARY PHONE')),
+            DataColumn(label: Text('ENROLLED CHILDREN')),
+            DataColumn(label: Text('ACTIONS')),
+          ],
+          rows: service.results.map((item) {
+            final f = item.family;
+            return DataRow(
+              cells: [
+                DataCell(
+                  Text(
+                    f.code,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
-              ),
-            ],
-          ),
+                DataCell(
+                  InkWell(
+                    onTap: () => _openDetails(item),
+                    child: Text(
+                      f.guardianName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryNavy,
+                      ),
+                    ),
+                  ),
+                ),
+                DataCell(Text(f.relationship ?? 'Guardian')),
+                DataCell(Text(f.primaryPhone)),
+                DataCell(
+                  Text(
+                    '${item.activeStudentCount} active (${item.totalStudentCount} total)',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+                DataCell(
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, size: 20),
+                    tooltip: 'View Family Details',
+                    onPressed: () => _openDetails(item),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
         ),
       );
     }
+
+    // Mobile / Tablet Card View
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
       itemCount: service.results.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = service.results[index];
         return FamilyCard(item: item, onTap: () => _openDetails(item));

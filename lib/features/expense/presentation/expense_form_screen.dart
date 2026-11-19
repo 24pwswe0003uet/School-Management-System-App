@@ -98,7 +98,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
+            constraints: const BoxConstraints(maxWidth: 860),
             child: Card(
               margin: EdgeInsets.zero,
               child: Padding(

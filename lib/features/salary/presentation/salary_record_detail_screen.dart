@@ -192,9 +192,11 @@ class _SalaryRecordDetailScreenState extends State<SalaryRecordDetailScreen> {
       );
     }
     final item = _item!;
-    final record = item.record;
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: ListView(
+          padding: const EdgeInsets.all(24),
       children: [
         Card(
           child: Padding(
@@ -297,7 +299,9 @@ class _SalaryRecordDetailScreenState extends State<SalaryRecordDetailScreen> {
           ),
         ),
       ],
-    );
+    ),
+  ),
+);
   }
 
   static String _signed(double value) =>

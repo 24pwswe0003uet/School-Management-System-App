@@ -194,8 +194,11 @@ class _FamilyDetailsScreenState extends State<FamilyDetailsScreen> {
     final details = _details!;
     final family = details.family;
 
-    return ListView(
-      padding: const EdgeInsets.all(24),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1000),
+        child: ListView(
+          padding: const EdgeInsets.all(24),
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
@@ -316,7 +319,9 @@ class _FamilyDetailsScreenState extends State<FamilyDetailsScreen> {
           ],
         ),
       ],
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildInfoCard(ThemeData theme, FamilyDetails details) {

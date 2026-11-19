@@ -71,6 +71,8 @@ class SchoolOfficeApp extends StatelessWidget {
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/reports/hub':
